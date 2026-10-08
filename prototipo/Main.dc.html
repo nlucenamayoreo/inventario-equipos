@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inventario de Equipos TI</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#ffffff}
+a{color:#00739F}a:hover{color:#005A7D}
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{text-align:left;font-weight:600;color:#45515C;background:#F5F7F9;padding:9px 10px;border-bottom:1px solid #d4d9df;white-space:nowrap}
+.t td{padding:7px 10px;border-bottom:1px solid #EBEEF1;vertical-align:middle}
+.in{height:40px;padding:0 10px;border:1px solid #d4d9df;border-radius:6px;font:inherit;font-size:13px;background:#ffffff;color:#1F2A33;box-sizing:border-box;width:100%}
+.lb{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#45515C;font-weight:600}
+</style>
+</helmet>
+<div style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1F2A33; background: #ffffff; font-size: 13px">
+
+  <header style="border-bottom: 1px solid #d4d9df; background: #ffffff">
+    <div style="max-width: 1360px; margin: 0 auto; padding: 18px 24px 0 24px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="width: 40px; height: 40px; border-radius: 6px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700">Inventario de Equipos TI</h1>
+            <span style="font-size: 12px; color: #5B6670">Activos asignados por usuario · Grupo Mayoreo</span>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: #7A4F00; background: #FFF4D6; padding: 4px 10px; border-radius: 12px; font-weight: 600">Plantilla con datos de ejemplo</span>
+      </div>
+      <nav aria-label="Secciones" style="display: flex; flex-wrap: wrap; gap: 4px">
+        <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+          <button type="button" onClick="{{tb.pick}}" style="{{tb.st}}">{{tb.label}}</button>
+        </sc-for>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1360px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 24px">
+
+    <!-- ================= RESUMEN ================= -->
+    <sc-if value="{{isDash}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 24px">
+
+        <section aria-label="Filtros" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding: 16px; border: 1px solid #d4d9df; border-radius: 6px; background: #FAFBFC">
+          <label class="lb" style="flex: 1 1 200px">Silo
+            <select class="in" value="{{fSilo}}" onChange="{{onSilo}}">
+              <option value="">Todos los silos</option>
+              <sc-for list="{{silos}}" as="o" hint-placeholder-count="3"><option value="{{o.id}}">{{o.nombre}}</option></sc-for>
+            </select>
+          </label>
+          <label class="lb" style="flex: 1 1 200px">Departamento
+            <select class="in" value="{{fDepto}}" onChange="{{onDepto}}">
+              <option value="">Todos los departamentos</option>
+              <sc-for list="{{deptoFilterOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.id}}">{{o.nombre}}</option></sc-for>
+            </select>
+          </label>
+          <label class="lb" style="flex: 2 1 260px">Buscar usuario
+            <input class="in" type="search" placeholder="Nombre o código" value="{{q}}" onChange="{{onQ}}">
+          </label>
+          <button type="button" onClick="{{clearF}}" style="height: 40px; padding: 0 16px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; color: #1F2A33; cursor: pointer">Limpiar filtros</button>
+        </section>
+
+        <section aria-label="Indicadores" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
+          <sc-for list="{{kpis}}" as="k" hint-placeholder-count="7">
+            <div style="border: 1px solid #d4d9df; border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; background: #ffffff">
+              <span style="font-size: 12px; color: #5B6670; font-weight: 600">{{k.label}}</span>
+              <span style="{{k.st}}">{{k.val}}</span>
+              <span style="font-size: 11px; color: #5B6670">{{k.sub}}</span>
+            </div>
+          </sc-for>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700">Cobertura por silo</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px">
+            <sc-for list="{{siloCards}}" as="c" hint-placeholder-count="3">
+              <div style="border: 1px solid #d4d9df; border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                  <span style="font-size: 14px; font-weight: 700">{{c.nombre}}</span>
+                  <span style="{{c.st}}">{{c.pct}}</span>
+                </div>
+                <div style="height: 6px; border-radius: 3px; background: #EBEEF1"><div style="{{c.bar}}"></div></div>
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: #45515C">
+                  <span>{{c.users}} usuarios</span><span>{{c.eq}} equipos</span><span>{{c.gaps}} faltantes</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Cobertura por departamento</h2>
+            <span style="font-size: 12px; color: #5B6670">Usuarios que lo tienen / usuarios cuyo cargo lo exige · «—» ningún cargo lo exige</span>
+          </div>
+          <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+            <table class="t">
+              <thead><tr>
+                <th>Departamento</th><th>Silo</th><th>Usuarios</th>
+                <sc-for list="{{tipos}}" as="t" hint-placeholder-count="6"><th style="text-align: center">{{t}}</th></sc-for>
+                <th style="text-align: center">Faltantes</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{deptoRows}}" as="r" hint-placeholder-count="6">
+                  <tr>
+                    <td style="font-weight: 600">{{r.nombre}}</td><td>{{r.silo}}</td><td>{{r.n}}</td>
+                    <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="6"><td><div style="{{c.st}}">{{c.txt}}</div></td></sc-for>
+                    <td><div style="{{r.gapSt}}">{{r.gaps}}</div></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: #45515C">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #2E8B57"></span>100% dotado</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E0A100"></span>50–99%</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #C8373E"></span>Menos de 50%</span>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 700">Stock disponible para asignar</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <sc-for list="{{stock}}" as="s" hint-placeholder-count="6">
+              <div style="border: 1px solid #d4d9df; border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; min-width: 150px">
+                <span style="{{s.st}}">{{s.n}}</span><span style="font-size: 13px">{{s.tipo}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Matriz usuario × equipo</h2>
+            <span style="font-size: 12px; color: #5B6670">{{matrixCount}} usuarios en el filtro · serial asignado · «Opcional» el cargo lo permite · «No aplica» el cargo no lo permite</span>
+          </div>
+          <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+            <table class="t">
+              <thead><tr>
+                <th>Usuario</th><th>Estado</th><th>Departamento</th><th>Silo</th>
+                <sc-for list="{{tipos}}" as="t" hint-placeholder-count="6"><th style="text-align: center">{{t}}</th></sc-for>
+                <th style="text-align: center">Faltan</th><th></th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{matrix}}" as="r" hint-placeholder-count="8">
+                  <tr>
+                    <td><div style="display: flex; flex-direction: column"><span style="font-weight: 600">{{r.nombre}}</span><span style="font-size: 11px; color: #5B6670">{{r.codigo}}</span></div></td>
+                    <td><span style="{{r.estSt}}">{{r.estado}}</span></td>
+                    <td>{{r.depto}}</td><td>{{r.silo}}</td>
+                    <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="6"><td><div style="{{c.st}}">{{c.txt}}</div></td></sc-for>
+                    <td><div style="{{r.faltSt}}">{{r.falt}}</div></td>
+                    <td><button type="button" onClick="{{r.pick}}" style="height: 32px; padding: 0 12px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 12px; color: #00739F; cursor: pointer; white-space: nowrap">Ver ficha</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <!-- ================= USUARIOS ================= -->
+    <sc-if value="{{isUsers}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+        <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+          <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Crear usuario</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+              <label class="lb">Código / cédula *<input class="in" value="{{uForm.codigo}}" onChange="{{uOn.codigo}}" placeholder="Ej. U-013"></label>
+              <label class="lb">Nombre completo *<input class="in" value="{{uForm.nombre}}" onChange="{{uOn.nombre}}"></label>
+              <label class="lb">Correo<input class="in" type="email" value="{{uForm.correo}}" onChange="{{uOn.correo}}"></label>
+              <label class="lb">Cargo *
+                <select class="in" value="{{uForm.cargoId}}" onChange="{{uOn.cargoId}}">
+                  <option value="">Seleccione…</option>
+                  <sc-for list="{{cargoOpts}}" as="o" hint-placeholder-count="8"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+                </select>
+              </label>
+              <label class="lb">Departamento *
+                <select class="in" value="{{uForm.deptoId}}" onChange="{{uOn.deptoId}}">
+                  <option value="">Seleccione…</option>
+                  <sc-for list="{{deptoOptsAll}}" as="o" hint-placeholder-count="8"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+                </select>
+              </label>
+            </div>
+            <sc-if value="{{uPerfil.show}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 10px 12px; border: 1px solid #d4d9df; border-radius: 6px; background: #FAFBFC; display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: 12px; font-weight: 700; color: #45515C">Dotación definida para el cargo «{{uPerfil.nombre}}»</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                  <sc-for list="{{uPerfil.items}}" as="p" hint-placeholder-count="6"><span style="{{p.st}}">{{p.txt}}</span></sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+              <button type="button" onClick="{{createUser}}" style="height: 44px; padding: 0 20px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Guardar usuario</button>
+              <span style="{{msgUSt}}">{{msgU}}</span>
+            </div>
+          </section>
+
+          <section style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between">
+              <h2 style="margin: 0; font-size: 15px; font-weight: 700">Usuarios ({{matrixCount}})</h2>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <select class="in" aria-label="Filtrar por silo" style="width: 170px" value="{{fSilo}}" onChange="{{onSilo}}">
+                  <option value="">Todos los silos</option>
+                  <sc-for list="{{silos}}" as="o" hint-placeholder-count="3"><option value="{{o.id}}">{{o.nombre}}</option></sc-for>
+                </select>
+                <select class="in" aria-label="Filtrar por departamento" style="width: 190px" value="{{fDepto}}" onChange="{{onDepto}}">
+                  <option value="">Todos los departamentos</option>
+                  <sc-for list="{{deptoFilterOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.id}}">{{o.nombre}}</option></sc-for>
+                </select>
+                <input class="in" type="search" aria-label="Buscar usuario" placeholder="Buscar…" style="width: 180px" value="{{q}}" onChange="{{onQ}}">
+              </div>
+            </div>
+            <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+              <table class="t">
+                <thead><tr><th>Código</th><th>Nombre</th><th>Cargo</th><th>Estado</th><th>Departamento</th><th>Silo</th><th>Equipos</th><th>Le falta</th><th></th></tr></thead>
+                <tbody>
+                  <sc-for list="{{userRows}}" as="r" hint-placeholder-count="8">
+                    <tr style="{{r.rowSt}}">
+                      <td>{{r.codigo}}</td><td style="font-weight: 600">{{r.nombre}}</td><td>{{r.cargo}}</td>
+                      <td><span style="{{r.estSt}}">{{r.estado}}</span></td>
+                      <td>{{r.depto}}</td><td>{{r.silo}}</td>
+                      <td>{{r.nEq}}</td><td style="{{r.faltSt}}">{{r.faltTxt}}</td>
+                      <td><button type="button" onClick="{{r.pick}}" style="height: 32px; padding: 0 12px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 12px; color: #00739F; cursor: pointer">Ver</button></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <aside aria-label="Ficha del usuario" style="flex: 1 1 400px; min-width: 0; border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+          <sc-if value="{{noSel}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; color: #5B6670">Seleccione un usuario para ver y gestionar sus equipos.</p>
+          </sc-if>
+          <sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 16px">
+
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                  <span style="font-size: 11px; color: #5B6670; font-weight: 600">FICHA DEL USUARIO</span>
+                  <span style="{{sel.estSt}}">{{sel.estado}}</span>
+                </div>
+                <span style="font-size: 17px; font-weight: 700">{{sel.nombre}}</span>
+                <span style="font-size: 12px; color: #45515C">{{sel.codigo}} · {{sel.cargo}}</span>
+                <span style="font-size: 12px; color: #45515C">{{sel.depto}} · {{sel.silo}}</span>
+                <span style="font-size: 12px; color: #45515C">{{sel.correo}}</span>
+              </div>
+
+              <sc-if value="{{sel.onVac}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 10px 12px; border-radius: 6px; background: #FFF4D6; color: #5C3D00; display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-weight: 700">De vacaciones: {{sel.vacFechas}}</span>
+                  <span style="font-size: 12px">Equipos: {{sel.vacAccion}}</span>
+                </div>
+              </sc-if>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-if value="{{sel.notVac}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{toggleVac}}" style="height: 40px; padding: 0 14px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; color: #1F2A33; cursor: pointer">Registrar vacaciones</button>
+                </sc-if>
+                <sc-if value="{{sel.onVac}}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{endVac}}" style="height: 40px; padding: 0 14px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; color: #17663A; cursor: pointer">Finalizar vacaciones</button>
+                </sc-if>
+                <button type="button" onClick="{{askDelete}}" style="height: 40px; padding: 0 14px; border: 1px solid #E8B4B6; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; color: #A4262C; cursor: pointer">Eliminar usuario</button>
+              </div>
+              <span style="{{msgFSt}}">{{msgF}}</span>
+
+              <sc-if value="{{showVac}}" hint-placeholder-val="{{ false }}">
+                <div style="border: 1px solid #d4d9df; border-radius: 6px; padding: 14px; background: #FAFBFC; display: flex; flex-direction: column; gap: 10px">
+                  <span style="font-weight: 700">Registrar vacaciones</span>
+                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+                    <label class="lb">Desde *<input class="in" type="date" value="{{vacForm.desde}}" onChange="{{vOn.desde}}"></label>
+                    <label class="lb">Hasta *<input class="in" type="date" value="{{vacForm.hasta}}" onChange="{{vOn.hasta}}"></label>
+                  </div>
+                  <label class="lb">¿Qué pasa con sus equipos? *
+                    <select class="in" value="{{vacForm.accion}}" onChange="{{vOn.accion}}">
+                      <option value="">Seleccione…</option>
+                      <option value="conserva">Conserva sus equipos</option>
+                      <option value="resguardo">Entrega a TI en resguardo</option>
+                      <option value="prestamo">Préstamo temporal a un suplente</option>
+                    </select>
+                  </label>
+                  <sc-if value="{{showSuplente}}" hint-placeholder-val="{{ false }}">
+                    <label class="lb">Suplente que recibe los equipos *
+                      <select class="in" value="{{vacForm.suplenteId}}" onChange="{{vOn.suplenteId}}">
+                        <option value="">Seleccione…</option>
+                        <sc-for list="{{suplenteOpts}}" as="o" hint-placeholder-count="6"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+                      </select>
+                    </label>
+                  </sc-if>
+                  <label class="lb">Observación<input class="in" value="{{vacForm.nota}}" onChange="{{vOn.nota}}" placeholder="Opcional"></label>
+                  <div style="display: flex; gap: 8px">
+                    <button type="button" onClick="{{saveVac}}" style="height: 40px; padding: 0 16px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Guardar</button>
+                    <button type="button" onClick="{{toggleVac}}" style="height: 40px; padding: 0 16px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; color: #1F2A33; cursor: pointer">Cancelar</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{confirmDel}}" hint-placeholder-val="{{ false }}">
+                <div style="border: 1px solid #E8B4B6; border-radius: 6px; padding: 14px; background: #FDF2F2; display: flex; flex-direction: column; gap: 10px">
+                  <span style="font-weight: 700; color: #A4262C">¿Eliminar a {{sel.nombre}}?</span>
+                  <span style="font-size: 12px; color: #5C1A1D">{{sel.delTxt}}</span>
+                  <div style="display: flex; gap: 8px">
+                    <button type="button" onClick="{{doDelete}}" style="height: 40px; padding: 0 16px; border: 0; background: #A4262C; color: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Sí, eliminar</button>
+                    <button type="button" onClick="{{cancelDelete}}" style="height: 40px; padding: 0 16px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; color: #1F2A33; cursor: pointer">Cancelar</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: 13px; font-weight: 700">Equipos asignados ({{sel.nEq}})</span>
+                <sc-for list="{{sel.assets}}" as="a" hint-placeholder-count="4">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid #EBEEF1; border-radius: 6px">
+                    <div style="display: flex; flex-direction: column; min-width: 0; gap: 2px">
+                      <span style="font-weight: 600">{{a.tipo}} · {{a.marca}} {{a.modelo}}</span>
+                      <span style="font-size: 11px; color: #5B6670">S/N {{a.serial}} · desde {{a.fecha}}</span>
+                      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                        <span style="{{a.estSt}}">{{a.estadoTxt}}</span>
+                        <sc-if value="{{a.fuera}}" hint-placeholder-val="{{ false }}">
+                          <span style="display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; background: #EFE7F7; color: #5B2C83">Fuera del perfil del cargo</span>
+                        </sc-if>
+                      </div>
+                    </div>
+                    <button type="button" onClick="{{a.release}}" style="height: 32px; padding: 0 10px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 12px; color: #A4262C; cursor: pointer">Liberar</button>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{sel.hasBorrowed}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <span style="font-size: 13px; font-weight: 700">Equipos recibidos en préstamo</span>
+                  <sc-for list="{{sel.borrowed}}" as="b" hint-placeholder-count="2">
+                    <div style="padding: 8px 10px; border: 1px dashed #d4d9df; border-radius: 6px; display: flex; flex-direction: column; gap: 2px">
+                      <span style="font-weight: 600">{{b.tipo}} · {{b.marca}} {{b.modelo}}</span>
+                      <span style="font-size: 11px; color: #5B6670">S/N {{b.serial}} · titular: {{b.titular}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 13px; font-weight: 700">Dotación del cargo</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                  <sc-for list="{{sel.perfil}}" as="p" hint-placeholder-count="6"><span style="{{p.st}}">{{p.txt}}</span></sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 13px; font-weight: 700">Le falta (obligatorio por cargo)</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                  <sc-for list="{{sel.missing}}" as="m" hint-placeholder-count="2">
+                    <span style="padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #FDE7E7; color: #A4262C">{{m}}</span>
+                  </sc-for>
+                  <sc-if value="{{sel.complete}}" hint-placeholder-val="{{ false }}">
+                    <span style="padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #E3F4E8; color: #17663A">Dotación completa</span>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid #EBEEF1">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                  <span style="font-size: 13px; font-weight: 700">Asignar equipo disponible ({{availCount}})</span>
+                  <select class="in" aria-label="Filtrar disponibles por tipo" style="width: 150px; height: 36px" value="{{assignTipo}}" onChange="{{onAssignTipo}}">
+                    <option value="">Todos los tipos</option>
+                    <sc-for list="{{tipos}}" as="t" hint-placeholder-count="6"><option value="{{t}}">{{t}}</option></sc-for>
+                  </select>
+                </div>
+                <sc-if value="{{hasHidden}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; color: #45515C">{{hiddenTxt}}</span>
+                </sc-if>
+                <div style="max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px">
+                  <sc-for list="{{availRows}}" as="o" hint-placeholder-count="5">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid #EBEEF1; border-radius: 6px">
+                      <div style="display: flex; flex-direction: column; min-width: 0; gap: 2px">
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+                          <span style="font-weight: 600">{{o.tipo}} · {{o.marca}} {{o.modelo}}</span>
+                          <sc-if value="{{o.falta}}" hint-placeholder-val="{{ false }}">
+                            <span style="padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; background: #FDE7E7; color: #A4262C">Le falta</span>
+                          </sc-if>
+                        </div>
+                        <span style="font-size: 11px; color: #5B6670; font-family: Consolas, 'Cascadia Mono', monospace">S/N {{o.serial}}</span>
+                      </div>
+                      <button type="button" onClick="{{o.pick}}" style="height: 34px; padding: 0 14px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer">Asignar</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{noAvail}}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 0; padding: 10px; color: #5B6670; font-size: 12px">No hay equipos disponibles permitidos para este cargo. Regístrelos en Activos o revise el perfil del cargo.</p>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </aside>
+      </div>
+    </sc-if>
+
+    <!-- ================= ACTIVOS ================= -->
+    <sc-if value="{{isAssets}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Registrar activo</h2>
+            <button type="button" onClick="{{toggleArt}}" style="height: 40px; padding: 0 14px; border: 1px solid {{accent}}; background: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; color: #00739F; cursor: pointer">{{artBtn}}</button>
+          </div>
+
+          <sc-if value="{{showArt}}" hint-placeholder-val="{{ false }}">
+            <div style="border: 1px solid #d4d9df; border-radius: 6px; padding: 14px; background: #F2F9FC; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-weight: 700">Nuevo artículo</span>
+                <span style="font-size: 12px; color: #45515C">Cree el modelo una sola vez; luego registre cada unidad con su serial.</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px">
+                <label class="lb">Tipo de equipo *
+                  <select class="in" value="{{artForm.tipo}}" onChange="{{artOn.tipo}}">
+                    <option value="">Seleccione…</option>
+                    <sc-for list="{{tipos}}" as="t" hint-placeholder-count="6"><option value="{{t}}">{{t}}</option></sc-for>
+                  </select>
+                </label>
+                <label class="lb">Marca *<input class="in" value="{{artForm.marca}}" onChange="{{artOn.marca}}"></label>
+                <label class="lb">Modelo *<input class="in" value="{{artForm.modelo}}" onChange="{{artOn.modelo}}"></label>
+                <label class="lb">Especificaciones<input class="in" value="{{artForm.specs}}" onChange="{{artOn.specs}}" placeholder="Ej. i5, 16 GB, 512 GB SSD"></label>
+                <label class="lb">Vida útil (meses)<input class="in" type="number" min="0" value="{{artForm.vida}}" onChange="{{artOn.vida}}"></label>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+                <button type="button" onClick="{{createArt}}" style="height: 40px; padding: 0 16px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Crear artículo</button>
+                <span style="{{msgArtSt}}">{{msgArt}}</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px">
+            <label class="lb" style="grid-column: span 2">Artículo *
+              <select class="in" value="{{aForm.articuloId}}" onChange="{{aOn.articuloId}}">
+                <option value="">Seleccione…</option>
+                <sc-for list="{{artOpts}}" as="o" hint-placeholder-count="6"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+              </select>
+            </label>
+            <label class="lb">Serial *<input class="in" value="{{aForm.serial}}" onChange="{{aOn.serial}}" placeholder="Número de serie"></label>
+            <label class="lb">Estado
+              <select class="in" value="{{aForm.estado}}" onChange="{{aOn.estado}}">
+                <option value="Disponible">Disponible</option>
+                <option value="En reparación">En reparación</option>
+                <option value="De baja">De baja</option>
+              </select>
+            </label>
+            <label class="lb">Asignar a (opcional)
+              <select class="in" value="{{aForm.userId}}" onChange="{{aOn.userId}}">
+                <option value="">Sin asignar</option>
+                <sc-for list="{{userOpts}}" as="o" hint-placeholder-count="8"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+              </select>
+            </label>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+            <button type="button" onClick="{{createAsset}}" style="height: 44px; padding: 0 20px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Guardar activo</button>
+            <span style="{{msgASt}}">{{msgA}}</span>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Activos ({{assetCount}})</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <select class="in" aria-label="Filtrar por tipo" style="width: 160px" value="{{fTipo}}" onChange="{{onTipo}}">
+                <option value="">Todos los tipos</option>
+                <sc-for list="{{tipos}}" as="t" hint-placeholder-count="6"><option value="{{t}}">{{t}}</option></sc-for>
+              </select>
+              <select class="in" aria-label="Filtrar por estado" style="width: 160px" value="{{fEstado}}" onChange="{{onEstado}}">
+                <option value="">Todos los estados</option>
+                <option value="Asignado">Asignado</option>
+                <option value="En resguardo">En resguardo</option>
+                <option value="Préstamo">Préstamo</option>
+                <option value="Disponible">Disponible</option>
+                <option value="En reparación">En reparación</option>
+                <option value="De baja">De baja</option>
+              </select>
+              <input class="in" type="search" aria-label="Buscar activo" placeholder="Serial, marca o usuario" style="width: 220px" value="{{qa}}" onChange="{{onQa}}">
+            </div>
+          </div>
+          <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+            <table class="t">
+              <thead><tr><th>Tipo</th><th>Marca</th><th>Modelo</th><th>Serial</th><th>Estado</th><th>Titular</th><th>En uso por</th><th>Departamento</th><th>Desde</th><th></th></tr></thead>
+              <tbody>
+                <sc-for list="{{assetRows}}" as="r" hint-placeholder-count="10">
+                  <tr>
+                    <td style="font-weight: 600">{{r.tipo}}</td><td>{{r.marca}}</td><td>{{r.modelo}}</td>
+                    <td style="font-family: Consolas, 'Cascadia Mono', monospace; font-size: 12px">{{r.serial}}</td>
+                    <td><span style="{{r.estSt}}">{{r.estado}}</span></td>
+                    <td>{{r.usuario}}</td><td>{{r.enUso}}</td><td>{{r.depto}}</td><td>{{r.fecha}}</td>
+                    <td>
+                      <sc-if value="{{r.canRelease}}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{r.release}}" style="height: 32px; padding: 0 10px; border: 1px solid #d4d9df; background: #ffffff; border-radius: 6px; font: inherit; font-size: 12px; color: #A4262C; cursor: pointer">Liberar</button>
+                      </sc-if>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <!-- ================= CATÁLOGOS ================= -->
+    <sc-if value="{{isCat}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <span style="{{msgCSt}}">{{msgC}}</span>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start">
+          <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Silos</h2>
+            <div style="display: flex; gap: 8px; align-items: flex-end">
+              <label class="lb" style="flex: 1">Nuevo silo<input class="in" value="{{cForm.silo}}" onChange="{{cOn.silo}}"></label>
+              <button type="button" onClick="{{addSilo}}" style="height: 40px; padding: 0 14px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer">Agregar</button>
+            </div>
+            <sc-for list="{{siloList}}" as="x" hint-placeholder-count="3">
+              <div style="display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid #EBEEF1; border-radius: 6px"><span style="font-weight: 600">{{x.nombre}}</span><span style="color: #5B6670; font-size: 12px">{{x.nDeptos}} deptos · {{x.nUsers}} usuarios</span></div>
+            </sc-for>
+          </section>
+          <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Departamentos</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <label class="lb">Nombre<input class="in" value="{{cForm.depto}}" onChange="{{cOn.depto}}"></label>
+              <label class="lb">Silo
+                <select class="in" value="{{cForm.deptoSilo}}" onChange="{{cOn.deptoSilo}}">
+                  <option value="">Seleccione…</option>
+                  <sc-for list="{{silos}}" as="o" hint-placeholder-count="3"><option value="{{o.id}}">{{o.nombre}}</option></sc-for>
+                </select>
+              </label>
+            </div>
+            <button type="button" onClick="{{addDepto}}" style="height: 40px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer">Agregar departamento</button>
+            <sc-for list="{{deptoList}}" as="x" hint-placeholder-count="6">
+              <div style="display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid #EBEEF1; border-radius: 6px"><span style="font-weight: 600">{{x.nombre}}</span><span style="color: #5B6670; font-size: 12px">{{x.silo}} · {{x.nUsers}} usuarios</span></div>
+            </sc-for>
+          </section>
+          <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Tipos de equipo (dotación estándar)</h2>
+            <div style="display: flex; gap: 8px; align-items: flex-end">
+              <label class="lb" style="flex: 1">Nuevo tipo<input class="in" value="{{cForm.tipo}}" onChange="{{cOn.tipo}}"></label>
+              <button type="button" onClick="{{addTipo}}" style="height: 40px; padding: 0 14px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer">Agregar</button>
+            </div>
+            <sc-for list="{{tipoList}}" as="x" hint-placeholder-count="6">
+              <div style="display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid #EBEEF1; border-radius: 6px"><span style="font-weight: 600">{{x.tipo}}</span><span style="color: #5B6670; font-size: 12px">{{x.total}} en inventario · {{x.disp}} disponibles</span></div>
+            </sc-for>
+          </section>
+        </div>
+        <section style="border: 1px solid #d4d9df; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Perfiles de dotación por cargo</h2>
+            <span style="font-size: 12px; color: #45515C">Define qué equipos y artículos puede tener cada cargo. Se aplica al crear usuarios y al asignar equipos.</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+            <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; gap: 8px; align-items: flex-end">
+                <label class="lb" style="flex: 1">Nuevo cargo<input class="in" value="{{cForm.cargo}}" onChange="{{cOn.cargo}}"></label>
+                <button type="button" onClick="{{addCargo}}" style="height: 40px; padding: 0 14px; border: 0; background: #00739F; color: #ffffff; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer">Agregar</button>
+              </div>
+              <sc-for list="{{cargoList}}" as="x" hint-placeholder-count="8">
+                <button type="button" onClick="{{x.pick}}" style="{{x.st}}"><span style="font-weight: 600">{{x.nombre}}</span><span style="font-size: 12px; color: #45515C">{{x.resumen}}</span></button>
+              </sc-for>
+            </div>
+            <div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+              <span style="font-size: 14px; font-weight: 700">Cargo: {{perfilCargo}}</span>
+              <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+                <table class="t">
+                  <thead><tr><th>Tipo de equipo</th><th>Nivel</th><th>Artículo permitido</th></tr></thead>
+                  <tbody>
+                    <sc-for list="{{perfilRows}}" as="r" hint-placeholder-count="6">
+                      <tr>
+                        <td style="font-weight: 600">{{r.tipo}}</td>
+                        <td>
+                          <select class="in" aria-label="Nivel" style="{{r.selSt}}" value="{{r.nivel}}" onChange="{{r.onNivel}}">
+                            <option value="obligatorio">Obligatorio</option>
+                            <option value="permitido">Opcional</option>
+                            <option value="no">No permitido</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select class="in" aria-label="Artículo permitido" value="{{r.art}}" onChange="{{r.onArt}}">
+                            <option value="">Cualquier artículo del tipo</option>
+                            <sc-for list="{{r.artOpts}}" as="o" hint-placeholder-count="2"><option value="{{o.id}}">{{o.label}}</option></sc-for>
+                          </select>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 700">Catálogo de artículos ({{artCount}})</h2>
+            <span style="font-size: 12px; color: #5B6670">Los artículos nuevos se crean desde Activos › Nuevo artículo</span>
+          </div>
+          <div style="overflow-x: auto; border: 1px solid #d4d9df; border-radius: 6px">
+            <table class="t">
+              <thead><tr><th>Código</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>Especificaciones</th><th>Vida útil</th><th>Unidades</th><th>Disponibles</th></tr></thead>
+              <tbody>
+                <sc-for list="{{artList}}" as="x" hint-placeholder-count="6">
+                  <tr><td>{{x.id}}</td><td style="font-weight: 600">{{x.tipo}}</td><td>{{x.marca}}</td><td>{{x.modelo}}</td><td>{{x.specs}}</td><td>{{x.vida}}</td><td>{{x.total}}</td><td>{{x.disp}}</td></tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0093D0","options":["#0093D0","#00739F","#1F2A33"]},"startTab":{"editor":"enum","options":["dash","usuarios","activos","catalogos"],"default":"dash"},"startUser":{"editor":null},"$preview":{"width":1440,"height":2100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var st = this.seed();
+    var p = this.props || props || {};
+    if (p.startTab) st.tab = p.startTab;
+    if (p.startUser) st.selUser = p.startUser;
+    this.state = st;
+  }
+
+  seed() {
+    var silos = [{ id: 'S1', nombre: 'Comercial' }, { id: 'S2', nombre: 'Operaciones' }, { id: 'S3', nombre: 'Corporativo' }];
+    var deptos = [
+      { id: 'D1', nombre: 'Ventas', siloId: 'S1' }, { id: 'D2', nombre: 'Mercadeo', siloId: 'S1' },
+      { id: 'D3', nombre: 'Almacén', siloId: 'S2' }, { id: 'D4', nombre: 'Compras', siloId: 'S2' }, { id: 'D5', nombre: 'Logística', siloId: 'S2' },
+      { id: 'D6', nombre: 'Finanzas', siloId: 'S3' }, { id: 'D7', nombre: 'Tecnología', siloId: 'S3' }, { id: 'D8', nombre: 'Talento Humano', siloId: 'S3' }
+    ];
+    var tipos = ['Laptop', 'Monitor', 'Teclado', 'Mouse', 'Headset', 'Base laptop'];
+    var articulos = [
+      { id: 'ART-001', tipo: 'Laptop', marca: 'Dell', modelo: 'Latitude 5440', specs: '[Especificaciones]', vida: '48', pref: 'LT' },
+      { id: 'ART-002', tipo: 'Monitor', marca: 'HP', modelo: 'P24 G5', specs: '24 pulgadas', vida: '60', pref: 'MN' },
+      { id: 'ART-003', tipo: 'Teclado', marca: 'Logitech', modelo: 'K120', specs: 'USB', vida: '36', pref: 'TC' },
+      { id: 'ART-004', tipo: 'Mouse', marca: 'Logitech', modelo: 'M90', specs: 'USB', vida: '36', pref: 'MS' },
+      { id: 'ART-005', tipo: 'Headset', marca: 'Jabra', modelo: 'Evolve2 30', specs: 'USB-A', vida: '36', pref: 'HS' },
+      { id: 'ART-006', tipo: 'Base laptop', marca: 'Genérica', modelo: 'Ajustable', specs: '', vida: '48', pref: 'BL' },
+      { id: 'ART-007', tipo: 'Laptop', marca: 'Dell', modelo: 'Precision 3581', specs: '[Especificaciones estación de trabajo]', vida: '48', pref: 'WS' }
+    ];
+    var artById = {}; articulos.forEach(function (a) { artById[a.id] = a; });
+    var defArt = { 'Laptop': 'ART-001', 'Monitor': 'ART-002', 'Teclado': 'ART-003', 'Mouse': 'ART-004', 'Headset': 'ART-005', 'Base laptop': 'ART-006' };
+    // Perfil por cargo: O = obligatorio, P = opcional, N = no permitido (orden de tipos)
+    var perfiles = [
+      ['Ejecutivo de ventas', 'ONNOON'], ['Analista de mercadeo', 'OOOOPO'], ['Jefe de almacén', 'OOOONP'], ['Auxiliar de almacén', 'NOOONN'],
+      ['Comprador', 'OOOOPO'], ['Coordinador de logística', 'OPPOOP'], ['Analista contable', 'OOOONO'], ['Tesorero', 'OOOONO'],
+      ['Analista de soporte', 'OOOOOO'], ['Desarrollador', 'OOOOOO'], ['Analista de nómina', 'OOOOPP']
+    ];
+    var map = { O: 'obligatorio', P: 'permitido', N: 'no' };
+    var cargos = perfiles.map(function (p, i) {
+      var perfil = {}; tipos.forEach(function (t, j) { perfil[t] = map[p[1][j]]; });
+      return { id: 'C' + ('0' + (i + 1)).slice(-2), nombre: p[0], perfil: perfil, arts: p[0] === 'Desarrollador' ? { 'Laptop': 'ART-007' } : {} };
+    });
+    var cargoByName = {}; cargos.forEach(function (c) { cargoByName[c.nombre] = c; });
+    var people = [
+      ['Usuario Ejemplo 01', 'Ejecutivo de ventas', 'D1'], ['Usuario Ejemplo 02', 'Ejecutivo de ventas', 'D1'], ['Usuario Ejemplo 03', 'Analista de mercadeo', 'D2'],
+      ['Usuario Ejemplo 04', 'Jefe de almacén', 'D3'], ['Usuario Ejemplo 05', 'Auxiliar de almacén', 'D3'], ['Usuario Ejemplo 06', 'Comprador', 'D4'],
+      ['Usuario Ejemplo 07', 'Coordinador de logística', 'D5'], ['Usuario Ejemplo 08', 'Analista contable', 'D6'], ['Usuario Ejemplo 09', 'Tesorero', 'D6'],
+      ['Usuario Ejemplo 10', 'Analista de soporte', 'D7'], ['Usuario Ejemplo 11', 'Desarrollador', 'D7'], ['Usuario Ejemplo 12', 'Analista de nómina', 'D8']
+    ];
+    var users = people.map(function (p, i) {
+      var n = ('00' + (i + 1)).slice(-3);
+      return { id: 'u' + n, codigo: 'U-' + n, nombre: p[0], cargoId: cargoByName[p[1]].id, deptoId: p[2], correo: 'usuario' + n + '@empresa.com', estado: 'Activo', vac: null };
+    });
+    var assets = []; var k = 0;
+    var mk = function (artId, userId, estado) {
+      k++; var ar = artById[artId];
+      assets.push({ id: 'a' + k, articuloId: ar.id, tipo: ar.tipo, marca: ar.marca, modelo: ar.modelo, serial: ar.pref + '-' + (46000 + k * 137).toString(36).toUpperCase(),
+        estado: estado, userId: userId, prestadoA: null, fecha: userId ? '2026-0' + (1 + (k % 9)) + '-1' + (k % 9) : '' });
+    };
+    users.forEach(function (u, i) {
+      var c = cargos.filter(function (x) { return x.id === u.cargoId; })[0];
+      tipos.forEach(function (t, j) {
+        var lvl = c.perfil[t];
+        if (lvl === 'no') return;
+        var give = lvl === 'obligatorio' ? !(((i + j * 2) % 6 === 0) || ((i * j) % 7 === 3)) : ((i + j) % 2 === 0);
+        if (give) mk(c.arts[t] || defArt[t], u.id, 'Asignado');
+      });
+    });
+    mk('ART-001', null, 'Disponible'); mk('ART-001', null, 'Disponible'); mk('ART-007', null, 'Disponible');
+    mk('ART-002', null, 'Disponible'); mk('ART-002', null, 'Disponible'); mk('ART-002', null, 'Disponible');
+    mk('ART-005', null, 'Disponible'); mk('ART-004', null, 'Disponible'); mk('ART-006', null, 'Disponible'); mk('ART-003', null, 'Disponible');
+    mk('ART-001', null, 'En reparación'); mk('ART-002', null, 'De baja');
+    users[2].estado = 'Vacaciones'; users[2].vac = { desde: '2026-10-05', hasta: '2026-10-19', accion: 'resguardo', suplenteId: '', nota: '' };
+    users[10].estado = 'Vacaciones'; users[10].vac = { desde: '2026-10-01', hasta: '2026-10-15', accion: 'prestamo', suplenteId: 'u010', nota: '' };
+    assets.forEach(function (a) {
+      if (a.userId === 'u003') a.estado = 'En resguardo';
+      if (a.userId === 'u011') { a.estado = 'Préstamo'; a.prestadoA = 'u010'; }
+    });
+    return {
+      tab: 'dash', silos: silos, deptos: deptos, tipos: tipos, articulos: articulos, cargos: cargos, users: users, assets: assets,
+      fSilo: '', fDepto: '', q: '', fTipo: '', fEstado: '', qa: '', selUser: '', assignTipo: '', selCargo: cargos[0].id,
+      showVac: false, confirmDel: false, showArt: false,
+      uForm: { codigo: '', nombre: '', correo: '', cargoId: '', deptoId: '' },
+      aForm: { articuloId: '', serial: '', estado: 'Disponible', userId: '' },
+      artForm: { tipo: '', marca: '', modelo: '', specs: '', vida: '' },
+      vacForm: { desde: '', hasta: '', accion: '', suplenteId: '', nota: '' },
+      cForm: { silo: '', depto: '', deptoSilo: '', tipo: '', cargo: '' },
+      msgU: '', msgUErr: false, msgA: '', msgAErr: false, msgC: '', msgCErr: false, msgF: '', msgFErr: false, msgArt: '', msgArtErr: false
+    };
+  }
+
+  today() { return new Date().toISOString().slice(0, 10); }
+
+  cargoOf(u) { var id = u && u.cargoId; return this.state.cargos.filter(function (c) { return c.id === id; })[0] || null; }
+  nivelOf(u, t) { var c = this.cargoOf(u); return c && c.perfil[t] ? c.perfil[t] : 'no'; }
+  permits(u, a) {
+    if (this.nivelOf(u, a.tipo) === 'no') return false;
+    var c = this.cargoOf(u); var r = c && c.arts ? c.arts[a.tipo] : '';
+    return !r || r === a.articuloId;
+  }
+
+  pickUser(id) {
+    this.setState({ selUser: id, assignTipo: '', showVac: false, confirmDel: false, msgF: '', vacForm: { desde: '', hasta: '', accion: '', suplenteId: '', nota: '' } });
+  }
+
+  createUser() {
+    var s = this.state, f = s.uForm;
+    if (!f.codigo.trim() || !f.nombre.trim() || !f.deptoId || !f.cargoId) { this.setState({ msgU: 'Código, nombre, cargo y departamento son obligatorios.', msgUErr: true }); return; }
+    var c = f.codigo.trim().toLowerCase();
+    if (s.users.some(function (u) { return u.codigo.toLowerCase() === c; })) { this.setState({ msgU: 'Ya existe un usuario con el código ' + f.codigo.trim() + '.', msgUErr: true }); return; }
+    var id = 'u' + Date.now();
+    this.setState({
+      users: s.users.concat([{ id: id, codigo: f.codigo.trim(), nombre: f.nombre.trim(), correo: f.correo.trim(), cargoId: f.cargoId, deptoId: f.deptoId, estado: 'Activo', vac: null }]),
+      uForm: { codigo: '', nombre: '', correo: '', cargoId: '', deptoId: '' }, msgU: 'Usuario ' + f.nombre.trim() + ' creado con la dotación de su cargo.', msgUErr: false
+    });
+    this.pickUser(id);
+  }
+
+  doDelete() {
+    var s = this.state, id = s.selUser, u = s.users.filter(function (x) { return x.id === id; })[0];
+    if (!u) return;
+    var assets = s.assets.map(function (a) {
+      if (a.userId === id) return Object.assign({}, a, { estado: 'Disponible', userId: null, prestadoA: null, fecha: '' });
+      if (a.prestadoA === id) return Object.assign({}, a, { estado: 'En resguardo', prestadoA: null });
+      return a;
+    });
+    var users = s.users.filter(function (x) { return x.id !== id; }).map(function (x) {
+      return x.vac && x.vac.suplenteId === id ? Object.assign({}, x, { vac: Object.assign({}, x.vac, { accion: 'resguardo', suplenteId: '' }) }) : x;
+    });
+    this.setState({ users: users, assets: assets, selUser: '', confirmDel: false, showVac: false, msgU: 'Usuario ' + u.nombre + ' eliminado; sus equipos quedaron disponibles.', msgUErr: false });
+  }
+
+  saveVac() {
+    var s = this.state, f = s.vacForm, id = s.selUser;
+    if (!f.desde || !f.hasta || !f.accion) { this.setState({ msgF: 'Indique fechas y qué pasa con los equipos.', msgFErr: true }); return; }
+    if (f.hasta < f.desde) { this.setState({ msgF: 'La fecha "hasta" no puede ser anterior a "desde".', msgFErr: true }); return; }
+    if (f.accion === 'prestamo' && !f.suplenteId) { this.setState({ msgF: 'Seleccione el suplente que recibe los equipos.', msgFErr: true }); return; }
+    var users = s.users.map(function (u) { return u.id === id ? Object.assign({}, u, { estado: 'Vacaciones', vac: Object.assign({}, f) }) : u; });
+    var assets = s.assets.map(function (a) {
+      if (a.userId !== id || a.estado !== 'Asignado') return a;
+      if (f.accion === 'resguardo') return Object.assign({}, a, { estado: 'En resguardo' });
+      if (f.accion === 'prestamo') return Object.assign({}, a, { estado: 'Préstamo', prestadoA: f.suplenteId });
+      return a;
+    });
+    this.setState({ users: users, assets: assets, showVac: false, msgF: 'Vacaciones registradas.', msgFErr: false, vacForm: { desde: '', hasta: '', accion: '', suplenteId: '', nota: '' } });
+  }
+
+  endVac() {
+    var s = this.state, id = s.selUser;
+    this.setState({
+      users: s.users.map(function (u) { return u.id === id ? Object.assign({}, u, { estado: 'Activo', vac: null }) : u; }),
+      assets: s.assets.map(function (a) { return a.userId === id && (a.estado === 'En resguardo' || a.estado === 'Préstamo') ? Object.assign({}, a, { estado: 'Asignado', prestadoA: null }) : a; }),
+      msgF: 'Vacaciones finalizadas; los equipos vuelven a estar asignados al usuario.', msgFErr: false
+    });
+  }
+
+  createArt() {
+    var s = this.state, f = s.artForm;
+    if (!f.tipo || !f.marca.trim() || !f.modelo.trim()) { this.setState({ msgArt: 'Tipo, marca y modelo son obligatorios.', msgArtErr: true }); return; }
+    var key = (f.tipo + '|' + f.marca.trim() + '|' + f.modelo.trim()).toLowerCase();
+    if (s.articulos.some(function (a) { return (a.tipo + '|' + a.marca + '|' + a.modelo).toLowerCase() === key; })) { this.setState({ msgArt: 'Ese artículo ya existe en el catálogo.', msgArtErr: true }); return; }
+    var id = 'ART-' + ('00' + (s.articulos.length + 1)).slice(-3);
+    this.setState({
+      articulos: s.articulos.concat([{ id: id, tipo: f.tipo, marca: f.marca.trim(), modelo: f.modelo.trim(), specs: f.specs.trim(), vida: f.vida }]),
+      artForm: { tipo: '', marca: '', modelo: '', specs: '', vida: '' }, showArt: false,
+      aForm: Object.assign({}, s.aForm, { articuloId: id }),
+      msgA: 'Artículo ' + id + ' creado. Ya puede registrar sus unidades con serial.', msgAErr: false, msgArt: ''
+    });
+  }
+
+  createAsset() {
+    var s = this.state, f = s.aForm, self = this;
+    var ar = s.articulos.filter(function (a) { return a.id === f.articuloId; })[0];
+    if (!ar || !f.serial.trim()) { this.setState({ msgA: 'Artículo y serial son obligatorios.', msgAErr: true }); return; }
+    var sn = f.serial.trim().toLowerCase();
+    if (s.assets.some(function (a) { return a.serial.toLowerCase() === sn; })) { this.setState({ msgA: 'El serial ' + f.serial.trim() + ' ya está registrado.', msgAErr: true }); return; }
+    var asg = !!f.userId;
+    if (asg) {
+      var u = s.users.filter(function (x) { return x.id === f.userId; })[0];
+      if (!self.permits(u, { tipo: ar.tipo, articuloId: ar.id })) { this.setState({ msgA: 'El cargo de ' + u.nombre + ' no permite este artículo. Regístrelo sin asignar o ajuste el perfil del cargo.', msgAErr: true }); return; }
+    }
+    this.setState({
+      assets: s.assets.concat([{ id: 'a' + Date.now(), articuloId: ar.id, tipo: ar.tipo, marca: ar.marca, modelo: ar.modelo, serial: f.serial.trim(),
+        estado: asg ? 'Asignado' : f.estado, userId: asg ? f.userId : null, prestadoA: null, fecha: asg ? this.today() : '' }]),
+      aForm: { articuloId: f.articuloId, serial: '', estado: 'Disponible', userId: '' }, msgA: 'Activo ' + f.serial.trim() + ' registrado.', msgAErr: false
+    });
+  }
+
+  assignOne(assetId) {
+    var s = this.state, self = this;
+    var u = s.users.filter(function (x) { return x.id === s.selUser; })[0];
+    var a = s.assets.filter(function (x) { return x.id === assetId; })[0];
+    if (!u || !a) return;
+    if (!self.permits(u, a)) { this.setState({ msgF: 'El cargo no permite este equipo.', msgFErr: true }); return; }
+    this.setState({
+      assets: s.assets.map(function (x) { return x.id === assetId ? Object.assign({}, x, { estado: 'Asignado', userId: u.id, prestadoA: null, fecha: self.today() }) : x; }),
+      msgF: 'Equipo asignado.', msgFErr: false
+    });
+  }
+
+  release(id) {
+    this.setState({ assets: this.state.assets.map(function (a) { return a.id === id ? Object.assign({}, a, { estado: 'Disponible', userId: null, prestadoA: null, fecha: '' }) : a; }) });
+  }
+
+  updCargo(cid, fn) {
+    this.setState({ cargos: this.state.cargos.map(function (c) { return c.id === cid ? fn(c) : c; }) });
+  }
+
+  addCargo() {
+    var s = this.state, n = s.cForm.cargo.trim();
+    if (!n) { this.setState({ msgC: 'Indique el nombre del cargo.', msgCErr: true }); return; }
+    if (s.cargos.some(function (c) { return c.nombre.toLowerCase() === n.toLowerCase(); })) { this.setState({ msgC: 'El cargo ' + n + ' ya existe.', msgCErr: true }); return; }
+    var perfil = {}; s.tipos.forEach(function (t) { perfil[t] = 'permitido'; });
+    var id = 'C' + Date.now();
+    this.setState({ cargos: s.cargos.concat([{ id: id, nombre: n, perfil: perfil, arts: {} }]), selCargo: id, cForm: Object.assign({}, s.cForm, { cargo: '' }),
+      msgC: 'Cargo ' + n + ' creado con todos los equipos como opcionales. Ajuste su dotación.', msgCErr: false });
+  }
+
+  addSilo() {
+    var s = this.state, n = s.cForm.silo.trim();
+    if (!n) { this.setState({ msgC: 'Indique el nombre del silo.', msgCErr: true }); return; }
+    this.setState({ silos: s.silos.concat([{ id: 'S' + Date.now(), nombre: n }]), cForm: Object.assign({}, s.cForm, { silo: '' }), msgC: 'Silo ' + n + ' agregado.', msgCErr: false });
+  }
+
+  addDepto() {
+    var s = this.state, n = s.cForm.depto.trim();
+    if (!n || !s.cForm.deptoSilo) { this.setState({ msgC: 'Indique nombre y silo del departamento.', msgCErr: true }); return; }
+    this.setState({ deptos: s.deptos.concat([{ id: 'D' + Date.now(), nombre: n, siloId: s.cForm.deptoSilo }]), cForm: Object.assign({}, s.cForm, { depto: '', deptoSilo: '' }), msgC: 'Departamento ' + n + ' agregado.', msgCErr: false });
+  }
+
+  addTipo() {
+    var s = this.state, n = s.cForm.tipo.trim();
+    if (!n) { this.setState({ msgC: 'Indique el tipo de equipo.', msgCErr: true }); return; }
+    if (s.tipos.some(function (t) { return t.toLowerCase() === n.toLowerCase(); })) { this.setState({ msgC: 'El tipo ' + n + ' ya existe.', msgCErr: true }); return; }
+    this.setState({ tipos: s.tipos.concat([n]), cForm: Object.assign({}, s.cForm, { tipo: '' }), msgC: 'Tipo ' + n + ' agregado. Quedó como «No permitido» en todos los cargos: defina en qué cargos aplica.', msgCErr: false });
+  }
+
+  renderVals() {
+    var self = this, s = this.state;
+    var accent = this.props.accent ?? '#0093D0';
+    var dById = {}, sById = {}, uById = {}, cById = {};
+    s.deptos.forEach(function (d) { dById[d.id] = d; });
+    s.silos.forEach(function (x) { sById[x.id] = x; });
+    s.users.forEach(function (u) { uById[u.id] = u; });
+    s.cargos.forEach(function (c) { cById[c.id] = c; });
+    var siloOf = function (u) { var d = dById[u.deptoId]; return d ? d.siloId : ''; };
+    var deptoName = function (u) { var d = dById[u.deptoId]; return d ? d.nombre : '—'; };
+    var siloName = function (u) { var x = sById[siloOf(u)]; return x ? x.nombre : '—'; };
+    var cargoName = function (u) { var c = cById[u.cargoId]; return c ? c.nombre : 'Sin cargo'; };
+    var nivel = function (u, t) { var c = cById[u.cargoId]; return c && c.perfil[t] ? c.perfil[t] : 'no'; };
+    var artOk = function (u, a) { if (nivel(u, a.tipo) === 'no') return false; var c = cById[u.cargoId]; var r = c && c.arts ? c.arts[a.tipo] : ''; return !r || r === a.articuloId; };
+    var q = (s.q || '').toLowerCase();
+    var inScope = function (u) { return (!s.fSilo || siloOf(u) === s.fSilo) && (!s.fDepto || u.deptoId === s.fDepto); };
+    var usersF = s.users.filter(function (u) { return inScope(u) && (!q || (u.nombre + ' ' + u.codigo + ' ' + cargoName(u)).toLowerCase().indexOf(q) >= 0); });
+    var OWN = { 'Asignado': 1, 'En resguardo': 1, 'Préstamo': 1 };
+    var byUser = {}, borrowedBy = {};
+    s.assets.forEach(function (a) {
+      if (a.userId && OWN[a.estado]) (byUser[a.userId] = byUser[a.userId] || []).push(a);
+      if (a.prestadoA && a.estado === 'Préstamo') (borrowedBy[a.prestadoA] = borrowedBy[a.prestadoA] || []).push(a);
+    });
+    var T = s.tipos;
+    var OK = 'background:#E3F4E8;color:#17663A;', MID = 'background:#FFF4D6;color:#7A4F00;', BAD = 'background:#FDE7E7;color:#A4262C;', NEU = 'background:#F3F5F7;color:#45515C;', BLU = 'background:#E3F1F8;color:#00608A;', PUR = 'background:#EFE7F7;color:#5B2C83;';
+    var NA = 'background:#ffffff;color:#5B6670;border:1px dashed #d4d9df;font-weight:500;';
+    var tone = function (p) { return p >= 1 ? OK : (p >= 0.5 ? MID : BAD); };
+    var cell = 'padding:5px 8px;border-radius:4px;font-size:12px;font-weight:600;text-align:center;white-space:nowrap;';
+    var pill = 'display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;font-weight:600;';
+    var has = function (uid, t) { return (byUser[uid] || []).some(function (a) { return a.tipo === t; }); };
+    var missingOf = function (u) { return T.filter(function (t) { return nivel(u, t) === 'obligatorio' && !has(u.id, t); }); };
+    var userEst = function (u) { return u.estado === 'Vacaciones' ? { txt: 'Vacaciones', st: pill + MID } : { txt: 'Activo', st: pill + OK }; };
+    var accionTxt = { conserva: 'conserva sus equipos', resguardo: 'entregados a TI en resguardo', prestamo: 'en préstamo a ' };
+    var estSt = { 'Asignado': pill + BLU, 'En resguardo': pill + MID, 'Préstamo': pill + PUR, 'Disponible': pill + OK, 'En reparación': pill + MID, 'De baja': pill + NEU };
+    var artLabel = function (id) { var a = s.articulos.filter(function (x) { return x.id === id; })[0]; return a ? a.marca + ' ' + a.modelo : id; };
+    var perfilChips = function (c) {
+      return T.map(function (t) {
+        var lv = c && c.perfil[t] ? c.perfil[t] : 'no'; var r = c && c.arts ? c.arts[t] : '';
+        if (lv === 'obligatorio') return { txt: t + ' · Obligatorio' + (r ? ' (' + artLabel(r) + ')' : ''), st: pill + BLU };
+        if (lv === 'permitido') return { txt: t + ' · Opcional' + (r ? ' (' + artLabel(r) + ')' : ''), st: pill + NEU };
+        return { txt: t + ' · No permitido', st: pill + NA + 'text-decoration:line-through;' };
+      });
+    };
+
+    var tabDefs = [['dash', 'Resumen'], ['usuarios', 'Usuarios'], ['activos', 'Activos'], ['catalogos', 'Catálogos']];
+    var tabs = tabDefs.map(function (d) {
+      var on = s.tab === d[0];
+      return { label: d[1], pick: function () { self.setState({ tab: d[0] }); },
+        st: 'height:44px;padding:0 18px;border:0;background:transparent;font:inherit;font-size:14px;cursor:pointer;border-bottom:3px solid ' + (on ? accent : 'transparent') + ';color:' + (on ? '#00739F' : '#45515C') + ';font-weight:' + (on ? '700' : '500') };
+    });
+
+    var fld = function (form, key) { return function (e) { var v = e.target.value; self.setState(function (st) { var o = Object.assign({}, st[form]); o[key] = v; var r = {}; r[form] = o; return r; }); }; };
+    var setv = function (key) { return function (e) { var r = {}; r[key] = e.target.value; self.setState(r); }; };
+
+    var matrix = usersF.map(function (u) {
+      var mine = byUser[u.id] || []; var falt = 0; var ue = userEst(u);
+      var cells = T.map(function (t) {
+        var hit = mine.filter(function (a) { return a.tipo === t; }); var lv = nivel(u, t);
+        if (hit.length) {
+          var fuera = hit.some(function (a) { return !artOk(u, a); });
+          var away = hit.every(function (a) { return a.estado !== 'Asignado'; });
+          return { txt: hit.map(function (a) { return a.serial; }).join(', ') + (fuera ? ' · fuera de perfil' : ''), st: cell + (fuera ? PUR : (away ? MID : OK)) };
+        }
+        if (lv === 'obligatorio') { falt++; return { txt: 'Falta', st: cell + BAD }; }
+        if (lv === 'permitido') return { txt: 'Opcional', st: cell + NEU };
+        return { txt: 'No aplica', st: cell + NA };
+      });
+      return { nombre: u.nombre, codigo: u.codigo + ' · ' + cargoName(u), estado: ue.txt, estSt: ue.st, depto: deptoName(u), silo: siloName(u), cells: cells, falt: falt, faltSt: cell + (falt ? BAD : OK),
+        pick: function () { self.setState({ tab: 'usuarios' }); self.pickUser(u.id); } };
+    });
+
+    var deptosF = s.deptos.filter(function (d) { return (!s.fSilo || d.siloId === s.fSilo) && (!s.fDepto || d.id === s.fDepto); });
+    var deptoRows = deptosF.map(function (d) {
+      var us = s.users.filter(function (u) { return u.deptoId === d.id; }); var gaps = 0;
+      var cells = T.map(function (t) {
+        var req = us.filter(function (u) { return nivel(u, t) === 'obligatorio'; });
+        var hv = req.filter(function (u) { return has(u.id, t); }).length; gaps += req.length - hv;
+        return { txt: req.length ? hv + ' / ' + req.length : '—', st: cell + (req.length ? tone(hv / req.length) : NEU) };
+      });
+      return { nombre: d.nombre, silo: (sById[d.siloId] || {}).nombre || '—', n: us.length, cells: cells, gaps: gaps, gapSt: cell + (gaps ? BAD : OK) };
+    });
+
+    var siloCards = s.silos.filter(function (x) { return !s.fSilo || x.id === s.fSilo; }).map(function (x) {
+      var us = s.users.filter(function (u) { return siloOf(u) === x.id; });
+      var eq = 0, hv = 0, tot = 0;
+      us.forEach(function (u) { eq += (byUser[u.id] || []).length; T.forEach(function (t) { if (nivel(u, t) === 'obligatorio') { tot++; if (has(u.id, t)) hv++; } }); });
+      var p = tot ? hv / tot : 0; var pc = Math.round(p * 100);
+      return { nombre: x.nombre, users: us.length, eq: eq, gaps: tot - hv, pct: pc + '% dotado', st: pill + (tot ? tone(p) : NEU),
+        bar: 'height:6px;border-radius:3px;background:' + accent + ';width:' + pc + '%' };
+    });
+
+    var cnt = function (est) { return s.assets.filter(function (a) { return a.estado === est; }).length; };
+    var usersScope = s.users.filter(inScope);
+    var complete = usersScope.filter(function (u) { return missingOf(u).length === 0; }).length;
+    var onVac = usersScope.filter(function (u) { return u.estado === 'Vacaciones'; }).length;
+    var fueraN = s.assets.filter(function (a) { return a.userId && OWN[a.estado] && uById[a.userId] && !artOk(uById[a.userId], a); }).length;
+    var big = 'font-size:26px;font-weight:700;line-height:1.1;';
+    var kpis = [
+      { label: 'Equipos activos', val: s.assets.length - cnt('De baja'), sub: 'Excluye equipos de baja', st: big + 'color:#1F2A33' },
+      { label: 'Asignados', val: cnt('Asignado'), sub: 'En uso por su titular', st: big + 'color:#00739F' },
+      { label: 'Resguardo / préstamo', val: cnt('En resguardo') + cnt('Préstamo'), sub: cnt('En resguardo') + ' en TI · ' + cnt('Préstamo') + ' prestados', st: big + 'color:#5B2C83' },
+      { label: 'Disponibles', val: cnt('Disponible'), sub: 'Listos para asignar', st: big + 'color:#17663A' },
+      { label: 'Usuarios de vacaciones', val: onVac, sub: 'En el filtro actual', st: big + 'color:#7A4F00' },
+      { label: 'Usuarios con faltantes', val: usersScope.length - complete, sub: complete + ' de ' + usersScope.length + ' con dotación obligatoria completa', st: big + 'color:#A4262C' },
+      { label: 'Fuera de perfil', val: fueraN, sub: 'Equipos que el cargo no permite', st: big + 'color:#5B2C83' }
+    ];
+
+    var stock = T.map(function (t) {
+      var n = s.assets.filter(function (a) { return a.tipo === t && a.estado === 'Disponible'; }).length;
+      return { tipo: t, n: n, st: pill + 'font-size:14px;min-width:16px;text-align:center;' + (n ? OK : BAD) };
+    });
+
+    var userRows = usersF.map(function (u) {
+      var miss = missingOf(u); var on = s.selUser === u.id; var ue = userEst(u);
+      return { codigo: u.codigo, nombre: u.nombre, cargo: cargoName(u), estado: ue.txt, estSt: ue.st, depto: deptoName(u), silo: siloName(u), nEq: (byUser[u.id] || []).length,
+        faltTxt: miss.length ? miss.join(', ') : 'Completo', faltSt: 'font-size:12px;font-weight:600;color:' + (miss.length ? '#A4262C' : '#17663A'),
+        rowSt: on ? 'background:#E8F5FB' : '', pick: function () { self.pickUser(u.id); } };
+    });
+
+    var su = uById[s.selUser];
+    var sel = { nombre: '', codigo: '', cargo: '', correo: '', depto: '', silo: '', estado: '', estSt: '', onVac: false, notVac: true, vacFechas: '', vacAccion: '',
+      nEq: 0, missing: [], complete: false, assets: [], borrowed: [], hasBorrowed: false, delTxt: '', perfil: [] };
+    var missSel = [];
+    if (su) {
+      var ue = userEst(su); var mine = byUser[su.id] || []; missSel = missingOf(su);
+      var borrowed = (borrowedBy[su.id] || []).map(function (a) { return { tipo: a.tipo, marca: a.marca, modelo: a.modelo, serial: a.serial, titular: (uById[a.userId] || {}).nombre || '—' }; });
+      var v = su.vac;
+      var acc = v ? (v.accion === 'prestamo' ? accionTxt.prestamo + ((uById[v.suplenteId] || {}).nombre || 'suplente') : accionTxt[v.accion]) : '';
+      sel = {
+        nombre: su.nombre, codigo: su.codigo, cargo: cargoName(su), correo: su.correo || 'Sin correo', depto: deptoName(su), silo: siloName(su),
+        estado: ue.txt, estSt: ue.st, onVac: su.estado === 'Vacaciones', notVac: su.estado !== 'Vacaciones',
+        vacFechas: v ? v.desde + ' al ' + v.hasta : '', vacAccion: acc + (v && v.nota ? ' · ' + v.nota : ''),
+        nEq: mine.length, missing: missSel, complete: missSel.length === 0, perfil: perfilChips(cById[su.cargoId]),
+        assets: mine.map(function (a) {
+          var et = a.estado === 'Préstamo' ? 'Prestado a ' + ((uById[a.prestadoA] || {}).nombre || '—') : a.estado;
+          return { tipo: a.tipo, marca: a.marca, modelo: a.modelo, serial: a.serial, fecha: a.fecha || '—', estadoTxt: et, estSt: (estSt[a.estado] || pill + NEU) + 'font-size:11px;',
+            fuera: !artOk(su, a), release: function () { self.release(a.id); } };
+        }),
+        borrowed: borrowed, hasBorrowed: borrowed.length > 0,
+        delTxt: mine.length ? 'Sus ' + mine.length + ' equipos se liberarán y quedarán como disponibles en inventario. Esta acción no se puede deshacer.' : 'El usuario no tiene equipos asignados. Esta acción no se puede deshacer.'
+      };
+    }
+
+    var availAll = s.assets.filter(function (a) { return a.estado === 'Disponible' && (!s.assignTipo || a.tipo === s.assignTipo); });
+    var availOk = su ? availAll.filter(function (a) { return artOk(su, a); }) : availAll;
+    var hidden = availAll.length - availOk.length;
+    var availRows = availOk
+      .map(function (a) { return { a: a, falta: missSel.indexOf(a.tipo) >= 0 }; })
+      .sort(function (x, y) { return (y.falta ? 1 : 0) - (x.falta ? 1 : 0) || x.a.tipo.localeCompare(y.a.tipo); })
+      .map(function (o) { var a = o.a; return { tipo: a.tipo, marca: a.marca, modelo: a.modelo, serial: a.serial, falta: o.falta, pick: function () { self.assignOne(a.id); } }; });
+
+    var qa = (s.qa || '').toLowerCase();
+    var assetRows = s.assets.filter(function (a) {
+      var u = a.userId ? uById[a.userId] : null; var p = a.prestadoA ? uById[a.prestadoA] : null;
+      var hay = (a.serial + ' ' + a.marca + ' ' + a.modelo + ' ' + (u ? u.nombre : '') + ' ' + (p ? p.nombre : '')).toLowerCase();
+      return (!s.fTipo || a.tipo === s.fTipo) && (!s.fEstado || a.estado === s.fEstado) && (!qa || hay.indexOf(qa) >= 0);
+    }).map(function (a) {
+      var u = a.userId ? uById[a.userId] : null; var p = a.prestadoA ? uById[a.prestadoA] : null;
+      var enUso = a.estado === 'Asignado' ? (u ? u.nombre : '—') : (a.estado === 'Préstamo' ? (p ? p.nombre + ' (suplente)' : '—') : (a.estado === 'En resguardo' ? 'TI (resguardo)' : '—'));
+      return { tipo: a.tipo, marca: a.marca || '—', modelo: a.modelo || '—', serial: a.serial, estado: a.estado, estSt: estSt[a.estado] || pill + NEU,
+        usuario: u ? u.nombre : '—', enUso: enUso, depto: u ? deptoName(u) : '—', fecha: a.fecha || '—', canRelease: !!OWN[a.estado],
+        release: function () { self.release(a.id); } };
+    });
+
+    var msg = function (txt, err) { return 'font-size:13px;font-weight:600;color:' + (err ? '#A4262C' : '#17663A') + (txt ? '' : ';display:none'); };
+    var unitCount = function (artId, est) { return s.assets.filter(function (a) { return a.articuloId === artId && (est ? a.estado === est : a.estado !== 'De baja'); }).length; };
+
+    var uc = cById[s.uForm.cargoId];
+    var uPerfil = { show: !!uc, nombre: uc ? uc.nombre : '', items: perfilChips(uc) };
+
+    var pc = cById[s.selCargo] || s.cargos[0];
+    var lvlSt = { obligatorio: 'border-color:#0093D0;color:#00608A;font-weight:600;', permitido: '', no: 'color:#5B6670;' };
+    var perfilRows = pc ? T.map(function (t) {
+      var lv = pc.perfil[t] || 'no';
+      return { tipo: t, nivel: lv, selSt: lvlSt[lv] || '', art: (pc.arts || {})[t] || '',
+        artOpts: s.articulos.filter(function (a) { return a.tipo === t; }).map(function (a) { return { id: a.id, label: a.marca + ' ' + a.modelo + ' (' + a.id + ')' }; }),
+        onNivel: function (e) { var v = e.target.value; self.updCargo(pc.id, function (c) { var pf = Object.assign({}, c.perfil); pf[t] = v; return Object.assign({}, c, { perfil: pf }); }); },
+        onArt: function (e) { var v = e.target.value; self.updCargo(pc.id, function (c) { var ar = Object.assign({}, c.arts || {}); if (v) ar[t] = v; else delete ar[t]; return Object.assign({}, c, { arts: ar }); }); } };
+    }) : [];
+    var cargoList = s.cargos.map(function (c) {
+      var on = pc && c.id === pc.id;
+      var nO = T.filter(function (t) { return c.perfil[t] === 'obligatorio'; }).length;
+      var nN = T.filter(function (t) { return (c.perfil[t] || 'no') === 'no'; }).length;
+      var nU = s.users.filter(function (u) { return u.cargoId === c.id; }).length;
+      return { nombre: c.nombre, resumen: nU + ' usuarios · ' + nO + ' obligatorios · ' + nN + ' no permitidos',
+        pick: function () { self.setState({ selCargo: c.id }); },
+        st: 'display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:8px 10px;border-radius:6px;font:inherit;font-size:13px;color:#1F2A33;cursor:pointer;min-height:44px;border:1px solid ' + (on ? accent : '#EBEEF1') + ';background:' + (on ? '#E8F5FB' : '#ffffff') };
+    });
+
+    return {
+      accent: accent, tabs: tabs,
+      isDash: s.tab === 'dash', isUsers: s.tab === 'usuarios', isAssets: s.tab === 'activos', isCat: s.tab === 'catalogos',
+      silos: s.silos, tipos: T,
+      deptoFilterOpts: s.deptos.filter(function (d) { return !s.fSilo || d.siloId === s.fSilo; }),
+      deptoOptsAll: s.deptos.map(function (d) { return { id: d.id, label: d.nombre + ' · ' + ((sById[d.siloId] || {}).nombre || '') }; }),
+      cargoOpts: s.cargos.map(function (c) { return { id: c.id, label: c.nombre }; }),
+      userOpts: s.users.map(function (u) { return { id: u.id, label: u.nombre + ' (' + u.codigo + ') · ' + cargoName(u) }; }),
+      suplenteOpts: s.users.filter(function (u) { return u.id !== s.selUser && u.estado === 'Activo'; }).map(function (u) { return { id: u.id, label: u.nombre + ' · ' + deptoName(u) }; }),
+      artOpts: s.articulos.map(function (a) { return { id: a.id, label: a.tipo + ' · ' + a.marca + ' ' + a.modelo + ' (' + a.id + ')' }; }),
+      fSilo: s.fSilo, fDepto: s.fDepto, q: s.q, fTipo: s.fTipo, fEstado: s.fEstado, qa: s.qa,
+      onSilo: function (e) { self.setState({ fSilo: e.target.value, fDepto: '' }); },
+      onDepto: setv('fDepto'), onQ: setv('q'), onTipo: setv('fTipo'), onEstado: setv('fEstado'), onQa: setv('qa'),
+      clearF: function () { self.setState({ fSilo: '', fDepto: '', q: '' }); },
+      kpis: kpis, siloCards: siloCards, deptoRows: deptoRows, stock: stock, matrix: matrix, matrixCount: usersF.length,
+      userRows: userRows, sel: sel, hasSel: !!su, noSel: !su,
+      availRows: availRows, availCount: availRows.length, noAvail: availRows.length === 0,
+      hasHidden: !!su && hidden > 0, hiddenTxt: hidden + (hidden === 1 ? ' equipo disponible no se muestra' : ' equipos disponibles no se muestran') + ' porque el cargo no los permite.',
+      assignTipo: s.assignTipo, onAssignTipo: setv('assignTipo'),
+      showVac: s.showVac, toggleVac: function () { self.setState({ showVac: !self.state.showVac, confirmDel: false, msgF: '' }); },
+      vacForm: s.vacForm, vOn: { desde: fld('vacForm', 'desde'), hasta: fld('vacForm', 'hasta'), accion: fld('vacForm', 'accion'), suplenteId: fld('vacForm', 'suplenteId'), nota: fld('vacForm', 'nota') },
+      showSuplente: s.vacForm.accion === 'prestamo',
+      saveVac: function () { self.saveVac(); }, endVac: function () { self.endVac(); },
+      confirmDel: s.confirmDel, askDelete: function () { self.setState({ confirmDel: true, showVac: false, msgF: '' }); },
+      cancelDelete: function () { self.setState({ confirmDel: false }); }, doDelete: function () { self.doDelete(); },
+      msgF: s.msgF, msgFSt: msg(s.msgF, s.msgFErr),
+      uForm: s.uForm, uOn: { codigo: fld('uForm', 'codigo'), nombre: fld('uForm', 'nombre'), correo: fld('uForm', 'correo'), cargoId: fld('uForm', 'cargoId'), deptoId: fld('uForm', 'deptoId') },
+      uPerfil: uPerfil,
+      createUser: function () { self.createUser(); }, msgU: s.msgU, msgUSt: msg(s.msgU, s.msgUErr),
+      showArt: s.showArt, artBtn: s.showArt ? 'Cerrar nuevo artículo' : '+ Nuevo artículo',
+      toggleArt: function () { self.setState({ showArt: !self.state.showArt, msgArt: '' }); },
+      artForm: s.artForm, artOn: { tipo: fld('artForm', 'tipo'), marca: fld('artForm', 'marca'), modelo: fld('artForm', 'modelo'), specs: fld('artForm', 'specs'), vida: fld('artForm', 'vida') },
+      createArt: function () { self.createArt(); }, msgArt: s.msgArt, msgArtSt: msg(s.msgArt, s.msgArtErr),
+      aForm: s.aForm, aOn: { articuloId: fld('aForm', 'articuloId'), serial: fld('aForm', 'serial'), estado: fld('aForm', 'estado'), userId: fld('aForm', 'userId') },
+      createAsset: function () { self.createAsset(); }, msgA: s.msgA, msgASt: msg(s.msgA, s.msgAErr),
+      assetRows: assetRows, assetCount: assetRows.length,
+      cForm: s.cForm, cOn: { silo: fld('cForm', 'silo'), depto: fld('cForm', 'depto'), deptoSilo: fld('cForm', 'deptoSilo'), tipo: fld('cForm', 'tipo'), cargo: fld('cForm', 'cargo') },
+      addSilo: function () { self.addSilo(); }, addDepto: function () { self.addDepto(); }, addTipo: function () { self.addTipo(); }, addCargo: function () { self.addCargo(); },
+      msgC: s.msgC, msgCSt: msg(s.msgC, s.msgCErr),
+      cargoList: cargoList, perfilRows: perfilRows, perfilCargo: pc ? pc.nombre : '—',
+      siloList: s.silos.map(function (x) { return { nombre: x.nombre, nDeptos: s.deptos.filter(function (d) { return d.siloId === x.id; }).length, nUsers: s.users.filter(function (u) { return siloOf(u) === x.id; }).length }; }),
+      deptoList: s.deptos.map(function (d) { return { nombre: d.nombre, silo: (sById[d.siloId] || {}).nombre || '—', nUsers: s.users.filter(function (u) { return u.deptoId === d.id; }).length }; }),
+      tipoList: T.map(function (t) { return { tipo: t, total: s.assets.filter(function (a) { return a.tipo === t && a.estado !== 'De baja'; }).length, disp: s.assets.filter(function (a) { return a.tipo === t && a.estado === 'Disponible'; }).length }; }),
+      artList: s.articulos.map(function (a) { return { id: a.id, tipo: a.tipo, marca: a.marca, modelo: a.modelo, specs: a.specs || '—', vida: a.vida ? a.vida + ' meses' : '—', total: unitCount(a.id), disp: unitCount(a.id, 'Disponible') }; }),
+      artCount: s.articulos.length
+    };
+  }
+}
+</script>
+</body>
+</html>
