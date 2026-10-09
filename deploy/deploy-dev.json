@@ -1,6 +1,6 @@
 {
   "env": "dev",
-  "started_at": "2026-10-09T13:31:20+00:00",
+  "started_at": "2026-10-09T21:00:50+00:00",
   "steps": [
     {
       "step": "verificación del proyecto",
@@ -8,30 +8,10 @@
       "detail": "PROJECT COMPLETE"
     },
     {
-      "step": "plataforma",
-      "status": "OK",
-      "detail": "dev-inventario-platform · Aurora dev-inventario-aurora · frontend https://dev.d3ray4qwjt9hc.amplifyapp.com"
-    },
-    {
-      "step": "base de datos",
-      "status": "OK",
-      "detail": "may_dev_inventario_db: provisioning, schema, 0 cambios, datos, validación TOTAL_FALTA=0"
-    },
-    {
-      "step": "backend",
-      "status": "OK",
-      "detail": "dev-inventario-api · código f78b987847bb5b9e · API https://mgvzljmyv5.execute-api.us-west-2.amazonaws.com/dev"
-    },
-    {
       "step": "frontend",
       "status": "OK",
       "detail": "https://dev.d3ray4qwjt9hc.amplifyapp.com"
-    },
-    {
-      "step": "horario de servicio",
-      "status": "OK",
-      "detail": "{\"action\": \"start\", \"cluster_before\": \"available\", \"cluster\": \"available\", \"functions\": 4}"
     }
   ],
-  "finished_at": "2026-10-09T13:45:58+00:00"
+  "finished_at": "2026-10-09T21:01:19+00:00"
 }

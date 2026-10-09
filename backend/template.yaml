@@ -794,7 +794,7 @@ Resources:
   DbRole:
     Type: AWS::IAM::Role
     Properties:
-      Description: 'INVENTARIO - rol compartido por 6 función(es): db'
+      Description: 'INVENTARIO - rol compartido por 4 función(es): db'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
