@@ -1,0 +1,70 @@
+# Especificación funcional del Inventario de Equipos TI (resumen trazable de docs/ESPECIFICACION.md).
+project:
+  name: Inventario de Equipos TI
+  slug: inventario
+  compania: may
+  exposure: internal
+  public_reason: ""
+  description: >
+    Aplicación interna de Grupo Mayoreo para inventariar los equipos de TI, saber a qué colaborador está
+    asignado cada uno y ver, por silo y por departamento, qué equipos se tienen y cuáles faltan según el
+    cargo de cada colaborador.
+frontend:
+  primary_color: "#0093D0"
+target:
+  aws_region: us-west-2
+roles: [admin_ti, consulta]
+requirements:
+  - id: RF-01
+    title: Sesión y roles
+    description: Ingreso con Cognito; admin_ti modifica todo, consulta solo lee. Se muestra la última sincronización con Google Workspace.
+    roles: [admin_ti, consulta]
+  - id: RF-02
+    title: Silos y departamentos
+    description: Alta y listado de silos y de departamentos (únicos por silo).
+    roles: [admin_ti]
+  - id: RF-03
+    title: Tipos de equipo y artículos
+    description: Tipos únicos (tipo nuevo queda no permitido en todos los cargos); artículos únicos por tipo+marca+modelo con código ART-NNN.
+    roles: [admin_ti]
+  - id: RF-04
+    title: Cargos y perfil de dotación
+    description: Cargo nuevo con todos los tipos permitidos; por tipo, nivel obligatorio/permitido/no permitido y artículo restringido opcional.
+    roles: [admin_ti]
+  - id: RF-05
+    title: Colaboradores
+    description: Alta y edición con código y correo únicos; listado sin eliminados; cambiar de cargo no libera equipos (fuera de perfil).
+    roles: [admin_ti]
+  - id: RF-06
+    title: Vacaciones
+    description: Conserva, resguardo o préstamo a un suplente activo; al finalizar los equipos vuelven a asignado.
+    roles: [admin_ti]
+  - id: RF-07
+    title: Baja lógica y desactivación
+    description: Baja libera equipos, devuelve préstamos a TI y ajusta vacaciones donde era suplente; desactivar deja equipos pendientes de recuperación.
+    roles: [admin_ti]
+  - id: RF-08
+    title: Registro de activos
+    description: Alta con serial único sin distinguir mayúsculas; si se indica colaborador queda asignado validando el perfil del cargo.
+    roles: [admin_ti]
+  - id: RF-09
+    title: Asignación, liberación y estados
+    description: Solo se asignan disponibles permitidos por el cargo; liberar o recibir vuelve a disponible; reparación y baja sin titular.
+    roles: [admin_ti]
+  - id: RF-10
+    title: Historial de movimientos
+    description: Cada cambio de estado o titular queda en activo_movimiento con quién, cuándo, de-a y motivo.
+    roles: [admin_ti, consulta]
+  - id: RF-11
+    title: Resumen de cobertura
+    description: Indicadores, cobertura por silo y por departamento (solo tipos obligatorios), stock y matriz usuario por tipo.
+    roles: [admin_ti, consulta]
+modules:
+  - {name: sesion, description: Operador actual y estado de la sincronización, entities: [sync_google_log]}
+  - {name: catalogos, description: Silos, departamentos, tipos, artículos y cargos, entities: [silo, departamento, tipo_equipo, articulo, cargo, cargo_dotacion]}
+  - {name: usuarios, description: Colaboradores y vacaciones, entities: [usuario, vacacion]}
+  - {name: activos, description: Activos e historial, entities: [activo, activo_movimiento]}
+features:
+  storage_buckets: []
+  realtime_tables: []
+  async: false

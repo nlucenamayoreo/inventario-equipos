@@ -6,11 +6,12 @@ esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 cat > /usr/share/nginx/html/config.js <<JS
 window.__APP_CONFIG__ = {
   apiMode: "$(esc "${API_MODE:-http}")",
-  apiUrl: "$(esc "${API_URL:-}")",
-  loginUrl: "$(esc "${LOGIN_URL:-}")"
+  apiBaseUrl: "$(esc "${API_BASE_URL:-/api}")",
+  cognitoUserPoolId: "$(esc "${COGNITO_USER_POOL_ID:-}")",
+  cognitoClientId: "$(esc "${COGNITO_CLIENT_ID:-}")"
 };
 JS
-# API_UPSTREAM vacío = sin proxy de /api (la API se publica en otro origen indicado en API_URL)
+# API_UPSTREAM vacío = sin proxy de /api (la API está en otro origen: API_BASE_URL con la URL completa)
 if [ -z "${API_UPSTREAM:-}" ]; then
   sed -i '/# api-proxy-start/,/# api-proxy-end/d' /etc/nginx/conf.d/default.conf
 fi

@@ -1,0 +1,34 @@
+{
+  "environment": "dev",
+  "database": "may_dev_inventario_db",
+  "rls_mode": "backend",
+  "counts": {
+    "tables": 12,
+    "views": 3,
+    "materialized_views": 0,
+    "functions": 1,
+    "triggers": 0,
+    "enums": 4,
+    "sequences": 10,
+    "indexes": 8,
+    "constraints": 37,
+    "policies": 0
+  },
+  "extensions": [],
+  "review": [],
+  "rls_policies": [],
+  "moved_to_backend": [],
+  "webhooks": [],
+  "unsupported": [],
+  "skipped": [],
+  "warnings": [],
+  "storage_buckets": [],
+  "realtime_tables": [],
+  "cron_jobs": [],
+  "auth": {
+    "users_count": 0,
+    "providers": [],
+    "uses_user_metadata": false,
+    "user_metadata_keys": []
+  }
+}

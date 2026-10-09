@@ -1,0 +1,584 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: INVENTARIO - API | Backend serverless (Lambda + API Gateway + Aurora)
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+    - dev
+    - qa
+    - prod
+    Description: Ambiente de despliegue
+  VpcSubnetIds:
+    Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
+    Description: Ruta SSM con las subnets privadas de las Lambdas
+  LambdaSecurityGroupId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>
+    Description: Ruta SSM con el Security Group de las Lambdas
+  DbProxyEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Ruta SSM con el endpoint de RDS Proxy / Aurora
+  DbSecretName:
+    Type: String
+    Description: Nombre del secreto de usr_<app>_app (nunca la password)
+  DbName:
+    Type: String
+    Description: Base Aurora del ambiente ({compania}_{amb}_{app}_db)
+  AllowedOrigins:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Ruta SSM con el origen del frontend (CORS estricto)
+  CognitoUserPoolArn:
+    Type: String
+    Default: ''
+    Description: ARN de un User Pool existente; vacío = crear uno en el stack
+  AlarmTopicArn:
+    Type: String
+    Default: ''
+    Description: SNS para alarmas (opcional)
+  LogLevel:
+    Type: String
+    Default: INFO
+    AllowedValues:
+    - DEBUG
+    - INFO
+    - WARNING
+    - ERROR
+Conditions:
+  IsProduction: !Equals
+  - !Ref 'Environment'
+  - prod
+  CreateUserPool: !Equals
+  - !Ref 'CognitoUserPoolArn'
+  - ''
+  HasAlarmTopic: !Not
+  - !Equals
+    - !Ref 'AlarmTopicArn'
+    - ''
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+    - x86_64
+    MemorySize: 512
+    Timeout: 30
+    CodeUri: src/
+    VpcConfig:
+      SubnetIds: !Ref 'VpcSubnetIds'
+      SecurityGroupIds:
+      - !Ref 'LambdaSecurityGroupId'
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref 'Environment'
+        SERVICE_NAME: inventario
+        LOG_LEVEL: !Ref 'LogLevel'
+        DB_SECRET_NAME: !Ref 'DbSecretName'
+        DB_NAME: !Ref 'DbName'
+        DB_PROXY_ENDPOINT: !Ref 'DbProxyEndpoint'
+        DB_PORT: '5432'
+        DB_SSLMODE: require
+        ALLOWED_ORIGINS: !Ref 'AllowedOrigins'
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Condition: CreateUserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub '${AWS::StackName}-users'
+      UsernameAttributes:
+      - email
+      AutoVerifiedAttributes:
+      - email
+      MfaConfiguration: 'OFF'
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+        - Name: verified_email
+          Priority: 1
+      DeletionProtection: !If [IsProduction, ACTIVE, INACTIVE]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 3
+      UserPoolTags:
+        Project: INVENTARIO
+        Environment: !Ref 'Environment'
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Condition: CreateUserPool
+    Properties:
+      ClientName: !Sub '${AWS::StackName}-web'
+      UserPoolId: !Ref 'UserPool'
+      GenerateSecret: false
+      ExplicitAuthFlows:
+      - ALLOW_USER_SRP_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+  AdminTiUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Condition: CreateUserPool
+    Properties:
+      GroupName: admin_ti
+      UserPoolId: !Ref 'UserPool'
+      Description: INVENTARIO - grupo admin_ti
+  ConsultaUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Condition: CreateUserPool
+    Properties:
+      GroupName: consulta
+      UserPoolId: !Ref 'UserPool'
+      Description: INVENTARIO - grupo consulta
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-api'
+      Description: INVENTARIO - API | REST API (internal)
+      StageName: !Ref 'Environment'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: 3.0.1
+      Cors:
+        AllowOrigin: !Sub '''${AllowedOrigins}'''
+        AllowHeaders: '''Authorization,Content-Type'''
+        AllowMethods: '''GET,POST,PUT,PATCH,DELETE,OPTIONS'''
+        MaxAge: '''600'''
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !If
+            - CreateUserPool
+            - !GetAtt 'UserPool.Arn'
+            - !Ref 'CognitoUserPoolArn'
+            Identity:
+              Header: Authorization
+      MethodSettings:
+      - ResourcePath: /*
+        HttpMethod: '*'
+        ThrottlingBurstLimit: 200
+        ThrottlingRateLimit: 100
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub '''${AllowedOrigins}'''
+              Access-Control-Allow-Headers: '''Authorization,Content-Type'''
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub '''${AllowedOrigins}'''
+              Access-Control-Allow-Headers: '''Authorization,Content-Type'''
+        UNAUTHORIZED:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub '''${AllowedOrigins}'''
+              Access-Control-Allow-Headers: '''Authorization,Content-Type'''
+        ACCESS_DENIED:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: !Sub '''${AllowedOrigins}'''
+              Access-Control-Allow-Headers: '''Authorization,Content-Type'''
+  Api5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-api5xx'
+      AlarmDescription: INVENTARIO - errores 5XX en API Gateway
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+      - Name: ApiName
+        Value: !Sub '${AWS::StackName}-api'
+  SesionApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-sesion-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  SesionApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-sesion-api'
+      Description: INVENTARIO - SESION_API | GET /me, GET /sync-google/estado
+      Handler: entrypoints.lambda_handlers.sesion.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'SesionApiLogGroup'
+      Events:
+        GetMe:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /me
+            Method: get
+        GetSyncGoogleEstado:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /sync-google/estado
+            Method: get
+      Role: !GetAtt 'DbRole.Arn'
+  SesionApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-sesion-api-errors'
+      AlarmDescription: INVENTARIO - errores en SesionApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'SesionApiFunction'
+  CatalogosApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-catalogos-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  CatalogosApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-catalogos-api'
+      Description: INVENTARIO - CATALOGOS_API | GET /silos, POST /silos, GET /departamentos, POST /departamentos, GET /tipos-equipo,
+        POST /tipos-equipo, GET /articulos, POST /articulos, GET /cargos, POST /cargos, PUT /cargos/{cargoId}/dotacion/{tipoId}
+      Handler: entrypoints.lambda_handlers.catalogos.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'CatalogosApiLogGroup'
+      Events:
+        GetSilos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /silos
+            Method: get
+        PostSilos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /silos
+            Method: post
+        GetDepartamentos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /departamentos
+            Method: get
+        PostDepartamentos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /departamentos
+            Method: post
+        GetTiposEquipo:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /tipos-equipo
+            Method: get
+        PostTiposEquipo:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /tipos-equipo
+            Method: post
+        GetArticulos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /articulos
+            Method: get
+        PostArticulos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /articulos
+            Method: post
+        GetCargos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /cargos
+            Method: get
+        PostCargos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /cargos
+            Method: post
+        PutCargosCargoIdDotacionTipoId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /cargos/{cargoId}/dotacion/{tipoId}
+            Method: put
+      Role: !GetAtt 'DbRole.Arn'
+  CatalogosApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-catalogos-api-errors'
+      AlarmDescription: INVENTARIO - errores en CatalogosApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'CatalogosApiFunction'
+  UsuariosApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-usuarios-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  UsuariosApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-usuarios-api'
+      Description: INVENTARIO - USUARIOS_API | GET /usuarios, POST /usuarios, PATCH /usuarios/{usuarioId}, DELETE /usuarios/{usuarioId},
+        POST /usuarios/{usuarioId}/vacaciones, POST /usuarios/{usuarioId}/vacaciones/finalizar, POST /usuarios/{usuarioId}/desactivar,
+        POST /usuar
+      Handler: entrypoints.lambda_handlers.usuarios.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'UsuariosApiLogGroup'
+      Events:
+        GetUsuarios:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios
+            Method: get
+        PostUsuarios:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios
+            Method: post
+        PatchUsuariosUsuarioId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}
+            Method: patch
+        DeleteUsuariosUsuarioId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}
+            Method: delete
+        PostUsuariosUsuarioIdVacaciones:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}/vacaciones
+            Method: post
+        PostUsuariosUsuarioIdVacacionesFinalizar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}/vacaciones/finalizar
+            Method: post
+        PostUsuariosUsuarioIdDesactivar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}/desactivar
+            Method: post
+        PostUsuariosUsuarioIdReactivar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /usuarios/{usuarioId}/reactivar
+            Method: post
+      Role: !GetAtt 'DbRole.Arn'
+  UsuariosApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-usuarios-api-errors'
+      AlarmDescription: INVENTARIO - errores en UsuariosApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'UsuariosApiFunction'
+  ActivosApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-activos-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  ActivosApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-activos-api'
+      Description: INVENTARIO - ACTIVOS_API | GET /activos, POST /activos, POST /activos/{activoId}/asignar, POST /activos/{activoId}/liberar,
+        POST /activos/{activoId}/estado, GET /activos/{activoId}/movimientos
+      Handler: entrypoints.lambda_handlers.activos.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'ActivosApiLogGroup'
+      Events:
+        GetActivos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos
+            Method: get
+        PostActivos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos
+            Method: post
+        PostActivosActivoIdAsignar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos/{activoId}/asignar
+            Method: post
+        PostActivosActivoIdLiberar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos/{activoId}/liberar
+            Method: post
+        PostActivosActivoIdEstado:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos/{activoId}/estado
+            Method: post
+        GetActivosActivoIdMovimientos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /activos/{activoId}/movimientos
+            Method: get
+      Role: !GetAtt 'DbRole.Arn'
+  ActivosApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-activos-api-errors'
+      AlarmDescription: INVENTARIO - errores en ActivosApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'ActivosApiFunction'
+  DbRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: 'INVENTARIO - rol compartido por 4 función(es): db'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: least-privilege
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: WriteOwnLogs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - !GetAtt 'ActivosApiLogGroup.Arn'
+            - !GetAtt 'CatalogosApiLogGroup.Arn'
+            - !GetAtt 'SesionApiLogGroup.Arn'
+            - !GetAtt 'UsuariosApiLogGroup.Arn'
+          - Sid: VpcNetworkInterfaces
+            Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            - ec2:AssignPrivateIpAddresses
+            - ec2:UnassignPrivateIpAddresses
+            Resource: '*'
+          - Sid: ReadDbSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${DbSecretName}-??????'
+Outputs:
+  UserPoolId:
+    Condition: CreateUserPool
+    Value: !Ref 'UserPool'
+    Description: COGNITO_USER_POOL_ID del frontend
+  UserPoolClientId:
+    Condition: CreateUserPool
+    Value: !Ref 'UserPoolClient'
+    Description: COGNITO_CLIENT_ID del frontend
+  ApiUrl:
+    Description: URL base del API (VITE_/NEXT_PUBLIC_/REACT_APP_API_BASE_URL)
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'

@@ -1,0 +1,398 @@
+version: 1
+kind: greenfield
+draft: false
+project:
+  name: Inventario de Equipos TI
+  slug: inventario
+  compania: may
+  label: INVENTARIO
+  exposure: internal
+  public_reason: ''
+source:
+  framework: vite
+  language: ts
+  router: react-router
+  monolith: false
+  schema_source: database/source
+target:
+  aws_region: us-west-2
+  api_endpoint_type: REGIONAL
+  frontend_hosting: amplify-static
+  lambda:
+    memory: 512
+    timeout: 30
+    architecture: x86_64
+  cognito:
+    groups:
+    - admin_ti
+    - consulta
+  database:
+    engine: aurora-postgresql
+    rls_mode: backend
+modules:
+- name: sesion
+  entities:
+  - sync_google_log
+  use_cases:
+  - GetSessionUseCase
+  - GetSyncGoogleStatusUseCase
+- name: catalogos
+  entities:
+  - silo
+  - departamento
+  - tipo_equipo
+  - articulo
+  - cargo
+  - cargo_dotacion
+  use_cases:
+  - ListSilosUseCase
+  - CreateSiloUseCase
+  - ListDepartamentosUseCase
+  - CreateDepartamentoUseCase
+  - ListTiposEquipoUseCase
+  - CreateTipoEquipoUseCase
+  - ListArticulosUseCase
+  - CreateArticuloUseCase
+  - ListCargosUseCase
+  - CreateCargoUseCase
+  - UpdateDotacionUseCase
+- name: usuarios
+  entities:
+  - usuario
+  - vacacion
+  use_cases:
+  - ListUsuariosUseCase
+  - CreateUsuarioUseCase
+  - UpdateUsuarioUseCase
+  - DeleteUsuarioUseCase
+  - RegisterVacacionesUseCase
+  - FinishVacacionesUseCase
+  - DeactivateUsuarioUseCase
+  - ReactivateUsuarioUseCase
+- name: activos
+  entities:
+  - activo
+  - activo_movimiento
+  use_cases:
+  - ListActivosUseCase
+  - CreateActivoUseCase
+  - AssignActivoUseCase
+  - ReleaseActivoUseCase
+  - ChangeActivoEstadoUseCase
+  - ListMovimientosUseCase
+api_endpoints:
+- method: GET
+  path: /me
+  function: SesionApi
+  handler: entrypoints.lambda_handlers.sesion.handler
+  use_case: GetSessionUseCase
+  module: sesion
+  auth: cognito
+  requirements:
+  - RF-01
+- method: GET
+  path: /sync-google/estado
+  function: SesionApi
+  handler: entrypoints.lambda_handlers.sesion.handler
+  use_case: GetSyncGoogleStatusUseCase
+  module: sesion
+  auth: cognito
+  requirements:
+  - RF-01
+- method: GET
+  path: /silos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListSilosUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-02
+  - RF-11
+- method: POST
+  path: /silos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateSiloUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-02
+- method: GET
+  path: /departamentos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListDepartamentosUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-02
+  - RF-11
+- method: POST
+  path: /departamentos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateDepartamentoUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-02
+- method: GET
+  path: /tipos-equipo
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListTiposEquipoUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-03
+  - RF-11
+- method: POST
+  path: /tipos-equipo
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateTipoEquipoUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-03
+- method: GET
+  path: /articulos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListArticulosUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-03
+  - RF-11
+- method: POST
+  path: /articulos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateArticuloUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-03
+- method: GET
+  path: /cargos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListCargosUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-04
+  - RF-11
+- method: POST
+  path: /cargos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateCargoUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-04
+- method: PUT
+  path: /cargos/{cargoId}/dotacion/{tipoId}
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: UpdateDotacionUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-04
+- method: GET
+  path: /usuarios
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: ListUsuariosUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-05
+  - RF-11
+- method: POST
+  path: /usuarios
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: CreateUsuarioUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-05
+- method: PATCH
+  path: /usuarios/{usuarioId}
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: UpdateUsuarioUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-05
+- method: DELETE
+  path: /usuarios/{usuarioId}
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: DeleteUsuarioUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-07
+- method: POST
+  path: /usuarios/{usuarioId}/vacaciones
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: RegisterVacacionesUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-06
+- method: POST
+  path: /usuarios/{usuarioId}/vacaciones/finalizar
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: FinishVacacionesUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-06
+- method: POST
+  path: /usuarios/{usuarioId}/desactivar
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: DeactivateUsuarioUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-07
+- method: POST
+  path: /usuarios/{usuarioId}/reactivar
+  function: UsuariosApi
+  handler: entrypoints.lambda_handlers.usuarios.handler
+  use_case: ReactivateUsuarioUseCase
+  module: usuarios
+  auth: cognito
+  requirements:
+  - RF-07
+- method: GET
+  path: /activos
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: ListActivosUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-08
+  - RF-11
+- method: POST
+  path: /activos
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: CreateActivoUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-08
+- method: POST
+  path: /activos/{activoId}/asignar
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: AssignActivoUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-09
+- method: POST
+  path: /activos/{activoId}/liberar
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: ReleaseActivoUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-09
+- method: POST
+  path: /activos/{activoId}/estado
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: ChangeActivoEstadoUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-09
+- method: GET
+  path: /activos/{activoId}/movimientos
+  function: ActivosApi
+  handler: entrypoints.lambda_handlers.activos.handler
+  use_case: ListMovimientosUseCase
+  module: activos
+  auth: cognito
+  requirements:
+  - RF-10
+async_workers: []
+storage_buckets: []
+realtime:
+  enabled: false
+scheduled_jobs: []
+database_objects:
+  naming_map: database/naming-map.json
+  generation_report: database/generation-report.json
+environment_variables:
+  backend:
+  - ENVIRONMENT
+  - SERVICE_NAME
+  - LOG_LEVEL
+  - DB_SECRET_NAME
+  - DB_NAME
+  - DB_PROXY_ENDPOINT
+  - DB_PORT
+  - DB_SSLMODE
+  - ALLOWED_ORIGINS
+  frontend:
+  - VITE_API_BASE_URL
+  - VITE_COGNITO_USER_POOL_ID
+  - VITE_COGNITO_CLIENT_ID
+  - VITE_COGNITO_DOMAIN
+  - VITE_APP_EXPOSURE
+  - VITE_REALTIME_ENABLED
+authorization_rules:
+- table: '*'
+  policy: Solo admin_ti modifica; consulta (o sin grupo) solo lee
+  command: INSERT/UPDATE/DELETE
+  roles:
+  - admin_ti
+  using: null
+  with_check: null
+  enforced_in: application.use_cases.common.require_admin en cada caso de uso de escritura
+structural_changes:
+- 'Endpoints agrupados en una Lambda por módulo (sesion, catalogos, usuarios, activos) con despacho por ruta: 10
+  usuarios sin concurrencia, menos arranques en frío.'
+- 'Contrato REST de docs/API.md sin el prefijo /api: la URL base es la del stage de API Gateway (VITE_API_BASE_URL).'
+- 'Errores en el formato estándar {error: {code, title, message, details}}; las reglas de negocio responden 422.'
+incompatibilities: []
+migration_risks:
+- 'Sincronización con Google Workspace (docs/INTEGRACION_GOOGLE_WORKSPACE.md) pendiente: el estado se lee de sync_google_log
+  pero el job aún no existe.'
+pending_errors: []
+screens:
+- page: src/views/resumen/pages/resumen-page.tsx
+  requirements:
+  - RF-11
+- page: src/views/usuarios/pages/usuarios-page.tsx
+  requirements:
+  - RF-05
+  - RF-06
+  - RF-07
+  - RF-09
+- page: src/views/activos/pages/activos-page.tsx
+  requirements:
+  - RF-08
+  - RF-09
+  - RF-10
+- page: src/views/catalogos/pages/catalogos-page.tsx
+  requirements:
+  - RF-02
+  - RF-03
+  - RF-04

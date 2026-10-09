@@ -1,0 +1,415 @@
+{
+  "environment": "prd",
+  "database": "may_prd_inventario_db",
+  "schemas": {
+    "public": "may_prd_inventario_sch_core"
+  },
+  "search_path": [
+    "may_prd_inventario_sch_core"
+  ],
+  "roles": {
+    "ro": "ro_inventario",
+    "rw": "rw_inventario",
+    "ddl": "ddl_inventario",
+    "admin": "admin_inventario"
+  },
+  "users": {
+    "ro": "usr_inventario_report",
+    "rw": "usr_inventario_app",
+    "ddl": "usr_inventario_deploy",
+    "admin": "usr_inventario_dba"
+  },
+  "relations": [
+    {
+      "source": "public.activo",
+      "target": "may_prd_inventario_sch_core.tbl_activo",
+      "target_name": "tbl_activo",
+      "kind": "table"
+    },
+    {
+      "source": "public.activo_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_activo_id",
+      "target_name": "seq_activo_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.activo_movimiento",
+      "target": "may_prd_inventario_sch_core.tbl_activo_movimiento",
+      "target_name": "tbl_activo_movimiento",
+      "kind": "table"
+    },
+    {
+      "source": "public.activo_movimiento_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_activo_movimiento_id",
+      "target_name": "seq_activo_movimiento_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.articulo",
+      "target": "may_prd_inventario_sch_core.tbl_articulo",
+      "target_name": "tbl_articulo",
+      "kind": "table"
+    },
+    {
+      "source": "public.articulo_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_articulo_id",
+      "target_name": "seq_articulo_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.cargo",
+      "target": "may_prd_inventario_sch_core.tbl_cargo",
+      "target_name": "tbl_cargo",
+      "kind": "table"
+    },
+    {
+      "source": "public.cargo_alias_google",
+      "target": "may_prd_inventario_sch_core.tbl_cargo_alias_google",
+      "target_name": "tbl_cargo_alias_google",
+      "kind": "table"
+    },
+    {
+      "source": "public.cargo_dotacion",
+      "target": "may_prd_inventario_sch_core.tbl_cargo_dotacion",
+      "target_name": "tbl_cargo_dotacion",
+      "kind": "table"
+    },
+    {
+      "source": "public.cargo_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_cargo_id",
+      "target_name": "seq_cargo_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.cobertura_departamento",
+      "target": "may_prd_inventario_sch_core.vw_cobertura_departamento",
+      "target_name": "vw_cobertura_departamento",
+      "kind": "view"
+    },
+    {
+      "source": "public.departamento",
+      "target": "may_prd_inventario_sch_core.tbl_departamento",
+      "target_name": "tbl_departamento",
+      "kind": "table"
+    },
+    {
+      "source": "public.departamento_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_departamento_id",
+      "target_name": "seq_departamento_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.faltantes",
+      "target": "may_prd_inventario_sch_core.vw_faltantes",
+      "target_name": "vw_faltantes",
+      "kind": "view"
+    },
+    {
+      "source": "public.silo",
+      "target": "may_prd_inventario_sch_core.tbl_silo",
+      "target_name": "tbl_silo",
+      "kind": "table"
+    },
+    {
+      "source": "public.silo_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_silo_id",
+      "target_name": "seq_silo_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.sync_google_log",
+      "target": "may_prd_inventario_sch_core.tbl_sync_google_log",
+      "target_name": "tbl_sync_google_log",
+      "kind": "table"
+    },
+    {
+      "source": "public.sync_google_log_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_sync_google_log_id",
+      "target_name": "seq_sync_google_log_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.tenencia",
+      "target": "may_prd_inventario_sch_core.vw_tenencia",
+      "target_name": "vw_tenencia",
+      "kind": "view"
+    },
+    {
+      "source": "public.tipo_equipo",
+      "target": "may_prd_inventario_sch_core.tbl_tipo_equipo",
+      "target_name": "tbl_tipo_equipo",
+      "kind": "table"
+    },
+    {
+      "source": "public.tipo_equipo_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_tipo_equipo_id",
+      "target_name": "seq_tipo_equipo_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.usuario",
+      "target": "may_prd_inventario_sch_core.tbl_usuario",
+      "target_name": "tbl_usuario",
+      "kind": "table"
+    },
+    {
+      "source": "public.usuario_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_usuario_id",
+      "target_name": "seq_usuario_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "public.vacacion",
+      "target": "may_prd_inventario_sch_core.tbl_vacacion",
+      "target_name": "tbl_vacacion",
+      "kind": "table"
+    },
+    {
+      "source": "public.vacacion_id_seq",
+      "target": "may_prd_inventario_sch_core.seq_vacacion_id",
+      "target_name": "seq_vacacion_id",
+      "kind": "sequence"
+    },
+    {
+      "source": "auth.users",
+      "target": "may_prd_inventario_sch_core.tbl_app_users",
+      "target_name": "tbl_app_users",
+      "kind": "table"
+    }
+  ],
+  "functions": [
+    {
+      "source": "public.puede_recibir",
+      "target": "may_prd_inventario_sch_core.fn_puede_recibir",
+      "target_name": "fn_puede_recibir"
+    }
+  ],
+  "auth_functions": {
+    "auth.uid()": "fn_auth_uid()",
+    "auth.role()": "fn_auth_role()",
+    "auth.email()": "fn_auth_email()",
+    "auth.jwt()": "fn_auth_jwt()"
+  },
+  "constraints": [
+    {
+      "table": "public.activo",
+      "source": "activo_articulo_id_fkey",
+      "target": "fk_activo_articulo"
+    },
+    {
+      "table": "public.activo",
+      "source": "activo_check",
+      "target": "ck_activo_check"
+    },
+    {
+      "table": "public.activo",
+      "source": "activo_check1",
+      "target": "ck_activo_check1"
+    },
+    {
+      "table": "public.activo",
+      "source": "activo_pkey",
+      "target": "pk_activo"
+    },
+    {
+      "table": "public.activo",
+      "source": "activo_prestado_a_fkey",
+      "target": "fk_activo_usuario_prestado_a"
+    },
+    {
+      "table": "public.activo",
+      "source": "activo_usuario_id_fkey",
+      "target": "fk_activo_usuario_usuario_id"
+    },
+    {
+      "table": "public.activo_movimiento",
+      "source": "activo_movimiento_activo_id_fkey",
+      "target": "fk_activo_movimiento_activo"
+    },
+    {
+      "table": "public.activo_movimiento",
+      "source": "activo_movimiento_pkey",
+      "target": "pk_activo_movimiento"
+    },
+    {
+      "table": "public.activo_movimiento",
+      "source": "activo_movimiento_usuario_anterior_fkey",
+      "target": "fk_activo_movimiento_usuario_usuario_anterior"
+    },
+    {
+      "table": "public.activo_movimiento",
+      "source": "activo_movimiento_usuario_nuevo_fkey",
+      "target": "fk_activo_movimiento_usuario_usuario_nuevo"
+    },
+    {
+      "table": "public.articulo",
+      "source": "articulo_codigo_key",
+      "target": "uq_articulo_codigo"
+    },
+    {
+      "table": "public.articulo",
+      "source": "articulo_pkey",
+      "target": "pk_articulo"
+    },
+    {
+      "table": "public.articulo",
+      "source": "articulo_tipo_id_fkey",
+      "target": "fk_articulo_tipo_equipo"
+    },
+    {
+      "table": "public.articulo",
+      "source": "articulo_vida_util_meses_check",
+      "target": "ck_articulo_vida_util_meses"
+    },
+    {
+      "table": "public.cargo",
+      "source": "cargo_pkey",
+      "target": "pk_cargo"
+    },
+    {
+      "table": "public.cargo_alias_google",
+      "source": "cargo_alias_google_cargo_id_fkey",
+      "target": "fk_cargo_alias_google_cargo"
+    },
+    {
+      "table": "public.cargo_alias_google",
+      "source": "cargo_alias_google_pkey",
+      "target": "pk_cargo_alias_google"
+    },
+    {
+      "table": "public.cargo_dotacion",
+      "source": "cargo_dotacion_articulo_restringido_fkey",
+      "target": "fk_cargo_dotacion_articulo"
+    },
+    {
+      "table": "public.cargo_dotacion",
+      "source": "cargo_dotacion_cargo_id_fkey",
+      "target": "fk_cargo_dotacion_cargo"
+    },
+    {
+      "table": "public.cargo_dotacion",
+      "source": "cargo_dotacion_pkey",
+      "target": "pk_cargo_dotacion"
+    },
+    {
+      "table": "public.cargo_dotacion",
+      "source": "cargo_dotacion_tipo_id_fkey",
+      "target": "fk_cargo_dotacion_tipo_equipo"
+    },
+    {
+      "table": "public.departamento",
+      "source": "departamento_pkey",
+      "target": "pk_departamento"
+    },
+    {
+      "table": "public.departamento",
+      "source": "departamento_silo_id_fkey",
+      "target": "fk_departamento_silo"
+    },
+    {
+      "table": "public.departamento",
+      "source": "departamento_silo_id_nombre_key",
+      "target": "uq_departamento_silo_id_nombre"
+    },
+    {
+      "table": "public.silo",
+      "source": "silo_nombre_key",
+      "target": "uq_silo_nombre"
+    },
+    {
+      "table": "public.silo",
+      "source": "silo_pkey",
+      "target": "pk_silo"
+    },
+    {
+      "table": "public.sync_google_log",
+      "source": "sync_google_log_pkey",
+      "target": "pk_sync_google_log"
+    },
+    {
+      "table": "public.tipo_equipo",
+      "source": "tipo_equipo_pkey",
+      "target": "pk_tipo_equipo"
+    },
+    {
+      "table": "public.usuario",
+      "source": "usuario_cargo_id_fkey",
+      "target": "fk_usuario_cargo"
+    },
+    {
+      "table": "public.usuario",
+      "source": "usuario_departamento_id_fkey",
+      "target": "fk_usuario_departamento"
+    },
+    {
+      "table": "public.usuario",
+      "source": "usuario_pkey",
+      "target": "pk_usuario"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_check",
+      "target": "ck_vacacion_check"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_check1",
+      "target": "ck_vacacion_check1"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_check2",
+      "target": "ck_vacacion_check2"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_pkey",
+      "target": "pk_vacacion"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_suplente_id_fkey",
+      "target": "fk_vacacion_usuario_suplente_id"
+    },
+    {
+      "table": "public.vacacion",
+      "source": "vacacion_usuario_id_fkey",
+      "target": "fk_vacacion_usuario_usuario_id"
+    }
+  ],
+  "indexes": [
+    {
+      "source": "public.ix_activo_usuario",
+      "target": "idx_activo_usuario_id"
+    },
+    {
+      "source": "public.ux_activo_serial",
+      "target": "uidx_activo_ux_activo_serial"
+    },
+    {
+      "source": "public.ux_articulo_modelo",
+      "target": "uidx_articulo_tipo_id_expr"
+    },
+    {
+      "source": "public.ux_cargo_nombre",
+      "target": "uidx_cargo_ux_cargo_nombre"
+    },
+    {
+      "source": "public.ux_tipo_equipo_nombre",
+      "target": "uidx_tipo_equipo_ux_tipo_equipo_nombre"
+    },
+    {
+      "source": "public.ux_usuario_codigo",
+      "target": "uidx_usuario_ux_usuario_codigo"
+    },
+    {
+      "source": "public.ux_usuario_correo",
+      "target": "uidx_usuario_ux_usuario_correo_partial"
+    },
+    {
+      "source": "public.ux_vacacion_abierta",
+      "target": "uidx_vacacion_usuario_id_partial"
+    }
+  ],
+  "triggers": []
+}

@@ -1,0 +1,87 @@
+{
+  "created": [
+    "database/config.yaml",
+    "migration-manifest.yaml (draft: true)",
+    "frontend/src/shared/api/axios-api-gateway.ts",
+    "frontend/src/shared/api/api-error.ts",
+    "frontend/src/shared/auth/cognito-auth.ts",
+    "frontend/src/shared/auth/setup-auth.ts",
+    "frontend/src/shared/auth/use-session.ts",
+    "frontend/src/shared/config/env.ts",
+    "frontend/src/vite-env.d.ts",
+    "frontend/amplify.yml",
+    "frontend/.prettierrc",
+    "frontend/.prettierignore",
+    "backend/pyproject.toml",
+    "backend/requirements-dev.txt",
+    "backend/src/application/__init__.py",
+    "backend/src/application/dto/__init__.py",
+    "backend/src/application/dto/principal.py",
+    "backend/src/application/ports/__init__.py",
+    "backend/src/application/ports/unit_of_work.py",
+    "backend/src/application/use_cases/__init__.py",
+    "backend/src/domain/__init__.py",
+    "backend/src/domain/entities/__init__.py",
+    "backend/src/domain/exceptions/__init__.py",
+    "backend/src/domain/services/__init__.py",
+    "backend/src/domain/value_objects/__init__.py",
+    "backend/src/entrypoints/__init__.py",
+    "backend/src/entrypoints/lambda_handlers/__init__.py",
+    "backend/src/entrypoints/lambda_handlers/bootstrap.py",
+    "backend/src/entrypoints/lambda_handlers/http_adapter.py",
+    "backend/src/infrastructure/__init__.py",
+    "backend/src/infrastructure/auth/__init__.py",
+    "backend/src/infrastructure/aws/__init__.py",
+    "backend/src/infrastructure/aws/secrets.py",
+    "backend/src/infrastructure/database/__init__.py",
+    "backend/src/infrastructure/database/postgresql/__init__.py",
+    "backend/src/infrastructure/database/postgresql/connection.py",
+    "backend/src/infrastructure/database/postgresql/errors.py",
+    "backend/src/infrastructure/database/postgresql/unit_of_work.py",
+    "backend/src/infrastructure/external/__init__.py",
+    "backend/src/requirements.txt",
+    "backend/src/shared/__init__.py",
+    "backend/src/shared/logging.py",
+    "backend/src/shared/serialization.py",
+    "backend/src/shared/settings.py",
+    "backend/tests/fakes/__init__.py",
+    "backend/tests/fakes/fake_unit_of_work.py",
+    "backend/tests/integration/test_postgres_unit_of_work.py",
+    "backend/tests/unit/test_http_adapter.py",
+    "backend/tests/unit/test_logging.py",
+    "backend/tests/unit/test_secrets.py",
+    "backend/tests/unit/test_serialization.py",
+    "backend/tests/unit/test_unit_of_work.py",
+    "backend/src/application/ports/app_user_repository.py",
+    "backend/src/application/use_cases/resolve_current_user.py",
+    "backend/src/infrastructure/database/postgresql/app_user_repository.py",
+    "backend/tests/fakes/fake_app_user_repository.py",
+    "backend/tests/unit/test_resolve_current_user.py"
+  ],
+  "overwritten": [
+    "frontend/package.json (dependencias pinneadas y scripts format)"
+  ],
+  "skipped": [
+    "frontend/ (ya existe: no se re-copia el original)"
+  ],
+  "conflicts": [
+    "frontend/.env.example"
+  ],
+  "warnings": [
+    "Variables sin prefijo público (posibles secretos de servidor → backend/Secrets Manager/SSM): API_PROXY_TARGET",
+    "Lockfile desactualizado tras editar package.json: validate_migration.py --run ejecuta la instalación y lo regenera."
+  ],
+  "features": {
+    "auth": true,
+    "storage": false,
+    "async": false,
+    "realtime": false
+  },
+  "next_steps": [
+    "Revisar migration-manifest.yaml (draft: true → false) según references/output-contract.md",
+    "generate_aurora_sql.py --schema-json .discovery/supabase-schema.json --config database/config.yaml --out database --with-data-migration",
+    "Implementar módulos del backend (references/backend-hexagonal.md) y refactorizar el frontend (references/frontend-rules.md)",
+    "generate_sam.py --manifest migration-manifest.yaml --out backend",
+    "validate_migration.py --out migration-output --run"
+  ]
+}

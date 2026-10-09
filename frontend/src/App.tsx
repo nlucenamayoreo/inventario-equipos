@@ -1,24 +1,47 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { ApiError } from './api';
-import { Layout } from './components/Layout';
-import { Cargando } from './components/ui';
-import { ActivosPage } from './pages/ActivosPage';
-import { CatalogosPage } from './pages/CatalogosPage';
-import { LoginPage } from './pages/LoginPage';
-import { ResumenPage } from './pages/ResumenPage';
-import { UsuariosPage } from './pages/UsuariosPage';
-import { useInventario, useSesion } from './state/datos';
-import { FiltrosProvider } from './state/filtros';
+import { Layout } from './shared/components/layout';
+import { Cargando } from './shared/components/ui';
+import { useSesion } from './shared/state/datos';
+import { FiltrosProvider } from './shared/state/filtros';
+import { ActivosPage } from './views/activos/pages/activos-page';
+import { useAuthController } from './views/auth/hooks/use-auth-controller';
+import { LoginPage } from './views/auth/pages/login-page';
+import { CatalogosPage } from './views/catalogos/pages/catalogos-page';
+import { useInventarioController } from './views/resumen/hooks/use-inventario-controller';
+import { ResumenPage } from './views/resumen/pages/resumen-page';
+import { UsuariosPage } from './views/usuarios/pages/usuarios-page';
 
 export function App() {
-  const sesion = useSesion();
-  if (sesion.isLoading) return <div className="app-main"><Cargando /></div>;
-  if (sesion.error instanceof ApiError && sesion.error.status === 401) return <LoginPage />;
-  if (sesion.error) return <div className="app-main"><p className="msg msg-err">{sesion.error.message}</p></div>;
+  const auth = useAuthController();
+  if (auth.estado === 'cargando')
+    return (
+      <div className="app-main">
+        <Cargando />
+      </div>
+    );
+  if (auth.estado === 'anonimo') return <LoginPage />;
+  return <Autenticado onSalir={auth.salir} />;
+}
 
+function Autenticado({ onSalir }: { onSalir: (() => void) | null }) {
+  const sesion = useSesion();
+  if (sesion.isLoading)
+    return (
+      <div className="app-main">
+        <Cargando />
+      </div>
+    );
+  if (sesion.error)
+    return (
+      <div className="app-main">
+        <p className="msg msg-err" role="alert">
+          {sesion.error.message}
+        </p>
+      </div>
+    );
   return (
     <FiltrosProvider>
-      <Layout>
+      <Layout onSalir={onSalir}>
         <Contenido />
       </Layout>
     </FiltrosProvider>
@@ -26,8 +49,13 @@ export function App() {
 }
 
 function Contenido() {
-  const { modelo, error } = useInventario();
-  if (error) return <p className="msg msg-err" role="alert">No se pudo cargar el inventario: {error.message}</p>;
+  const { modelo, error } = useInventarioController();
+  if (error)
+    return (
+      <p className="msg msg-err" role="alert">
+        No se pudo cargar el inventario: {error.message}
+      </p>
+    );
   if (!modelo) return <Cargando />;
   return (
     <Routes>

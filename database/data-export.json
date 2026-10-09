@@ -1,0 +1,50 @@
+{
+  "origin": "semillas de database/source",
+  "envs": {
+    "dev": {
+      "auth.users": 0,
+      "public.cargo": 0,
+      "public.silo": 0,
+      "public.sync_google_log": 0,
+      "public.tipo_equipo": 6,
+      "public.articulo": 0,
+      "public.cargo_alias_google": 0,
+      "public.departamento": 0,
+      "public.cargo_dotacion": 0,
+      "public.usuario": 0,
+      "public.activo": 0,
+      "public.vacacion": 0,
+      "public.activo_movimiento": 0
+    },
+    "qa": {
+      "auth.users": 0,
+      "public.cargo": 0,
+      "public.silo": 0,
+      "public.sync_google_log": 0,
+      "public.tipo_equipo": 6,
+      "public.articulo": 0,
+      "public.cargo_alias_google": 0,
+      "public.departamento": 0,
+      "public.cargo_dotacion": 0,
+      "public.usuario": 0,
+      "public.activo": 0,
+      "public.vacacion": 0,
+      "public.activo_movimiento": 0
+    },
+    "prd": {
+      "auth.users": 0,
+      "public.cargo": 0,
+      "public.silo": 0,
+      "public.sync_google_log": 0,
+      "public.tipo_equipo": 6,
+      "public.articulo": 0,
+      "public.cargo_alias_google": 0,
+      "public.departamento": 0,
+      "public.cargo_dotacion": 0,
+      "public.usuario": 0,
+      "public.activo": 0,
+      "public.vacacion": 0,
+      "public.activo_movimiento": 0
+    }
+  }
+}

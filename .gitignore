@@ -1,1 +1,6 @@
 .env.aws
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.aws-sam/
+deploy/build/

@@ -6,6 +6,11 @@ export default defineConfig({
   server: {
     port: 5173,
     // En desarrollo con backend local: VITE_API_MODE=http y el proxy reenvía /api
-    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://localhost:3000', changeOrigin: true } },
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 });

@@ -1,0 +1,103 @@
+{
+  "root": "frontend",
+  "name": "inventario-equipos-frontend",
+  "app_slug": "inventario_equipos_frontend",
+  "framework": "vite",
+  "framework_version": "8.3.4",
+  "react_version": "19.3.0",
+  "language": "ts",
+  "router": {
+    "kind": "react-router",
+    "version": "7.18.4"
+  },
+  "ui_kits": [],
+  "tailwind": false,
+  "state_libs": [
+    "@tanstack/react-query"
+  ],
+  "axios_installed": false,
+  "aws_amplify_installed": false,
+  "supabase_packages": [],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "src_dir": "src",
+  "entry": "src/main.tsx",
+  "source_files": 29,
+  "components": 14,
+  "largest_files": [
+    {
+      "file": "src/api/mock/mockApi.ts",
+      "lines": 366
+    },
+    {
+      "file": "src/components/FichaUsuario.tsx",
+      "lines": 352
+    },
+    {
+      "file": "src/pages/ActivosPage.tsx",
+      "lines": 213
+    },
+    {
+      "file": "src/pages/CatalogosPage.tsx",
+      "lines": 193
+    },
+    {
+      "file": "src/pages/ResumenPage.tsx",
+      "lines": 193
+    },
+    {
+      "file": "src/api/types.ts",
+      "lines": 172
+    },
+    {
+      "file": "src/pages/UsuariosPage.tsx",
+      "lines": 143
+    },
+    {
+      "file": "src/api/mock/seed.ts",
+      "lines": 132
+    },
+    {
+      "file": "src/components/ui.tsx",
+      "lines": 116
+    },
+    {
+      "file": "src/api/mock/mockApi.test.ts",
+      "lines": 109
+    }
+  ],
+  "monolith": false,
+  "has_views_dir": false,
+  "env_files": {
+    ".env.example": {
+      "keys": [
+        "VITE_API_MODE",
+        "VITE_API_URL"
+      ],
+      "is_example": true
+    }
+  },
+  "env_references": [
+    "API_PROXY_TARGET"
+  ],
+  "prettier_config": null,
+  "test_frameworks": [
+    "vitest"
+  ],
+  "current_hosting": {
+    "vercel": false,
+    "netlify": false,
+    "amplify": false,
+    "dockerfile": true
+  },
+  "frontend_deploy_target": "amplify-static",
+  "supabase": {
+    "exists": false
+  },
+  "engines_node": null
+}

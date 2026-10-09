@@ -1,0 +1,77 @@
+{
+  "project": "/home/user/inventario-equipos",
+  "python": "3.13.16",
+  "python_ok": true,
+  "package_manager": "npm",
+  "tools": {
+    "node": "v22.22.0",
+    "npm": "10.9.4",
+    "pnpm": "10.28.0",
+    "yarn": "1.22.22",
+    "git": "git version 2.43.0",
+    "docker": "Docker version 29.8.2, build 7fc2dff",
+    "sam": null,
+    "aws": null,
+    "cfn-lint": "cfn-lint 1.57.2",
+    "supabase": null,
+    "ruff": "ruff 0.16.8",
+    "jq": "jq-1.7",
+    "psql": "psql (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+    "initdb": "initdb (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+    "pg_ctl": "pg_ctl (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)"
+  },
+  "python_modules": {
+    "yaml": true,
+    "pytest": true,
+    "samtranslator": true,
+    "cfnlint": true,
+    "psycopg": true,
+    "boto3": true
+  },
+  "validations": {
+    "frontend_build": {
+      "status": "available",
+      "reason": ""
+    },
+    "backend_unit_tests": {
+      "status": "available",
+      "reason": ""
+    },
+    "backend_lint": {
+      "status": "available",
+      "reason": ""
+    },
+    "sam_validate": {
+      "status": "available",
+      "reason": ""
+    },
+    "cfn_lint": {
+      "status": "available",
+      "reason": ""
+    },
+    "aurora_sql_sandbox": {
+      "status": "available",
+      "reason": ""
+    },
+    "schema_from_live_db": {
+      "status": "NOT VALIDATED",
+      "reason": "Falta .env.supabase con SUPABASE_DB_PASSWORD (+psql) o SUPABASE_ACCESS_TOKEN (python scripts/supabase_connect.py init)"
+    },
+    "schema_from_migrations": {
+      "status": "NOT VALIDATED",
+      "reason": "Sin PG efímero o sin supabase/migrations"
+    },
+    "backend_integration_tests": {
+      "status": "available",
+      "reason": ""
+    }
+  },
+  "git_uncommitted_changes": true,
+  "supabase_credentials": {
+    "file": ".env.supabase",
+    "exists": false,
+    "fields_set": []
+  },
+  "output_dir_exists": false,
+  "blocking": []
+}

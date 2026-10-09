@@ -1,0 +1,425 @@
+{
+  "generated_at": "2026-10-09T13:29:08+00:00",
+  "dynamic_checks_run": true,
+  "mode": "greenfield",
+  "overall": "PASSED",
+  "criteria": {
+    "1": {
+      "title": "Especificación completa: project-spec con requisitos, modelo de datos fuente y esquema introspeccionado",
+      "status": "OK"
+    },
+    "2": {
+      "title": "Manifest del proyecto revisado (sin borrador, endpoints y pantallas trazados a requisitos)",
+      "status": "OK"
+    },
+    "3": {
+      "title": "Scripts Aurora completos por ambiente (provisioning, schema, validation, rollback, migration)",
+      "status": "OK"
+    },
+    "4": {
+      "title": "SQL Aurora validado en PostgreSQL efímero (idempotente, TOTAL_FALTA=0, rollback limpio)",
+      "status": "OK"
+    },
+    "5": {
+      "title": "Backend hexagonal: handlers y use cases existen; dependencias entre capas y SQL en su lugar",
+      "status": "OK"
+    },
+    "6": {
+      "title": "Tests del backend en verde (unitarios con fakes e integración contra el esquema generado)",
+      "status": "OK"
+    },
+    "7": {
+      "title": "Lint del backend limpio (ruff)",
+      "status": "OK"
+    },
+    "8": {
+      "title": "Template SAM único y samconfig dev/qa/prod con tags y rutas por ambiente",
+      "status": "OK"
+    },
+    "9": {
+      "title": "Template válido (cfn-lint y transformación SAM)",
+      "status": "OK"
+    },
+    "10": {
+      "title": "IAM mínimo y resiliencia (sin wildcards salvo ENI; SQS con DLQ, reintentos, visibility e idempotencia)",
+      "status": "OK"
+    },
+    "11": {
+      "title": "Frontend con arquitectura estándar (Page → Controller → Api → axiosApiGateway, naming y tamaños)",
+      "status": "OK"
+    },
+    "12": {
+      "title": "Frontend compila, cumple Prettier y sus tests pasan",
+      "status": "OK"
+    },
+    "13": {
+      "title": "Sin SDKs de BaaS ni accesos directos a datos desde el frontend (Supabase, Firebase)",
+      "status": "OK"
+    },
+    "14": {
+      "title": "Sin secretos ni identificadores de ambiente hardcodeados",
+      "status": "OK"
+    },
+    "15": {
+      "title": "Sin TODO/FIXME/pseudocódigo en el código generado",
+      "status": "OK"
+    },
+    "16": {
+      "title": "Reporte final con matriz REQUISITO → DESTINO y solo pendientes de configuración",
+      "status": "PENDING"
+    }
+  },
+  "checks": [
+    {
+      "id": "project_spec",
+      "criterion": 1,
+      "title": "project-spec.yaml con requisitos identificados",
+      "status": "OK",
+      "detail": "11 requisitos",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "data_model",
+      "criterion": 1,
+      "title": "Modelo de datos fuente aplicado e introspeccionado",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "manifest",
+      "criterion": 2,
+      "title": "Manifest completo",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "authorization_rules",
+      "criterion": 2,
+      "title": "Cada regla de autorización tiene dónde se aplica (enforced_in)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "requirements_traced",
+      "criterion": 2,
+      "title": "Cada requisito tiene endpoints o pantallas",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "pending_errors",
+      "criterion": 2,
+      "title": "Sin errores pendientes declarados en el manifest",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "database_files",
+      "criterion": 3,
+      "title": "Scripts Aurora por ambiente (dev, qa, prd)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "database_unsupported",
+      "criterion": 3,
+      "title": "Objetos sin equivalente en Aurora documentados",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "aurora_sql_sandbox",
+      "criterion": 4,
+      "title": "SQL en PostgreSQL efímero (idempotencia, validación, rollback)",
+      "status": "OK",
+      "detail": "dev: PASSED; qa: PASSED; prd: PASSED",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "template_single",
+      "criterion": 8,
+      "title": "Un único template SAM parametrizado",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "template_standard",
+      "criterion": 8,
+      "title": "Template conforme al estándar (parámetros, runtime, logs)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_structure",
+      "criterion": 5,
+      "title": "Estructura hexagonal del backend",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_handlers",
+      "criterion": 5,
+      "title": "Handlers del manifest y del template implementados",
+      "status": "OK",
+      "detail": "4 handlers",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_use_cases",
+      "criterion": 5,
+      "title": "Use cases del manifest implementados",
+      "status": "OK",
+      "detail": "27 use cases",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_layers",
+      "criterion": 5,
+      "title": "Dependencias entre capas y handlers delgados",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_sql",
+      "criterion": 5,
+      "title": "SQL solo en adapters y con nombres de Aurora",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_unit_tests",
+      "criterion": 6,
+      "title": "pytest (unitarios con fakes)",
+      "status": "OK",
+      "detail": "47 passed, 3 skipped in 0.17s",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_module_tests",
+      "criterion": 6,
+      "title": "Cada módulo del manifest tiene tests unitarios",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_integration_tests",
+      "criterion": 6,
+      "title": "pytest de integración contra el esquema generado (PG efímero)",
+      "status": "OK",
+      "detail": "3 passed in 0.21s",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "backend_lint",
+      "criterion": 7,
+      "title": "ruff check",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "samconfig",
+      "criterion": 8,
+      "title": "samconfig.toml dev/qa/prod con tags y rutas por ambiente",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "cfn_lint",
+      "criterion": 9,
+      "title": "cfn-lint",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "sam_validate",
+      "criterion": 9,
+      "title": "Transformación SAM",
+      "status": "OK",
+      "detail": "48 recursos CloudFormation",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "iam_least_privilege",
+      "criterion": 10,
+      "title": "IAM sin comodines (salvo ENI documentado)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "sqs_controls",
+      "criterion": 10,
+      "title": "Colas SQS con los 4 controles del estándar",
+      "status": "OK",
+      "detail": "sin colas (no aplica)",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_shared",
+      "criterion": 11,
+      "title": "Capa compartida (gateway HTTP, auth, env)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_http",
+      "criterion": 11,
+      "title": "HTTP solo vía axiosApiGateway",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_layers",
+      "criterion": 11,
+      "title": "Módulos src/views con Page → Controller → Api",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_naming",
+      "criterion": 11,
+      "title": "Naming kebab-case (-page, use-*-controller, -api)",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_sizes",
+      "criterion": 11,
+      "title": "Límites de tamaño de pages y secciones",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_large_files",
+      "criterion": 11,
+      "title": "Componentes fuera de views/ ≤ 250 líneas",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_env_hosting",
+      "criterion": 11,
+      "title": "Variables por ambiente y hosting",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_build",
+      "criterion": 12,
+      "title": "Instalación y build del frontend",
+      "status": "OK",
+      "detail": "install + build",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_prettier",
+      "criterion": 12,
+      "title": "Prettier",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "frontend_tests",
+      "criterion": 12,
+      "title": "Tests del frontend",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "supabase_residue",
+      "criterion": 13,
+      "title": "Cero referencias a Supabase en frontend y backend",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "hardcoded_secrets",
+      "criterion": 14,
+      "title": "Sin secretos en código ni configuración",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "hardcoded_ids",
+      "criterion": 14,
+      "title": "Sin IDs/ARNs/endpoints de AWS hardcodeados",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    },
+    {
+      "id": "no_todos",
+      "criterion": 15,
+      "title": "Sin TODO/FIXME/pseudocódigo",
+      "status": "OK",
+      "detail": "",
+      "items": [],
+      "items_total": 0
+    }
+  ]
+}

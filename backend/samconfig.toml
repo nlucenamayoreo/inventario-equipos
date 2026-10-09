@@ -1,0 +1,79 @@
+version = 0.1
+
+[dev.build.parameters]
+cached = true
+parallel = true
+
+[dev.deploy.parameters]
+stack_name = "dev-inventario-api"
+region = "us-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
+s3_prefix = "dev-inventario-api"
+parameter_overrides = [
+  "Environment=dev",
+  "VpcSubnetIds=/dev/inventario/network/subnets",
+  "LambdaSecurityGroupId=/dev/inventario/network/lambda-sg",
+  "DbProxyEndpoint=/dev/inventario/db/proxy-endpoint",
+  "DbSecretName=/dev/inventario/db/app",
+  "DbName=may_dev_inventario_db",
+  "AllowedOrigins=/dev/inventario/frontend/origin",
+]
+tags = [
+  "Project=INVENTARIO",
+  "Environment=DEV",
+  "Name=dev-inventario-api",
+]
+
+[qa.build.parameters]
+cached = true
+parallel = true
+
+[qa.deploy.parameters]
+stack_name = "qa-inventario-api"
+region = "us-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
+s3_prefix = "qa-inventario-api"
+parameter_overrides = [
+  "Environment=qa",
+  "VpcSubnetIds=/qa/inventario/network/subnets",
+  "LambdaSecurityGroupId=/qa/inventario/network/lambda-sg",
+  "DbProxyEndpoint=/qa/inventario/db/proxy-endpoint",
+  "DbSecretName=/qa/inventario/db/app",
+  "DbName=may_qa_inventario_db",
+  "AllowedOrigins=/qa/inventario/frontend/origin",
+]
+tags = [
+  "Project=INVENTARIO",
+  "Environment=QA",
+  "Name=qa-inventario-api",
+]
+
+[prod.build.parameters]
+cached = true
+parallel = true
+
+[prod.deploy.parameters]
+stack_name = "prod-inventario-api"
+region = "us-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
+s3_prefix = "prod-inventario-api"
+parameter_overrides = [
+  "Environment=prod",
+  "VpcSubnetIds=/prod/inventario/network/subnets",
+  "LambdaSecurityGroupId=/prod/inventario/network/lambda-sg",
+  "DbProxyEndpoint=/prod/inventario/db/proxy-endpoint",
+  "DbSecretName=/prod/inventario/db/app",
+  "DbName=may_prd_inventario_db",
+  "AllowedOrigins=/prod/inventario/frontend/origin",
+]
+tags = [
+  "Project=INVENTARIO",
+  "Environment=PROD",
+  "Name=prod-inventario-api",
+]
