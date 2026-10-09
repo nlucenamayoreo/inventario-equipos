@@ -1,32 +1,37 @@
 {
   "env": "dev",
-  "started_at": "2026-10-09T13:29:42+00:00",
+  "started_at": "2026-10-09T13:31:20+00:00",
   "steps": [
     {
+      "step": "verificación del proyecto",
+      "status": "OK",
+      "detail": "PROJECT COMPLETE"
+    },
+    {
       "step": "plataforma",
-      "status": "DRY-RUN",
-      "detail": "deploy/build/dev/platform.yaml (52 recursos)"
+      "status": "OK",
+      "detail": "dev-inventario-platform · Aurora dev-inventario-aurora · frontend https://dev.d3ray4qwjt9hc.amplifyapp.com"
     },
     {
       "step": "base de datos",
-      "status": "DRY-RUN",
-      "detail": "deploy/build/dev/database.zip: aurora_postgresql_data.sql, aurora_postgresql_provisioning.sql, aurora_postgresql_schema.sql, aurora_postgresql_validation.sql"
+      "status": "OK",
+      "detail": "may_dev_inventario_db: provisioning, schema, 0 cambios, datos, validación TOTAL_FALTA=0"
     },
     {
       "step": "backend",
-      "status": "DRY-RUN",
-      "detail": "backend-f78b987847bb5b9e.zip (5368 KB) · stack dev-inventario-api · 7 parámetros"
+      "status": "OK",
+      "detail": "dev-inventario-api · código f78b987847bb5b9e · API https://mgvzljmyv5.execute-api.us-west-2.amazonaws.com/dev"
     },
     {
       "step": "frontend",
-      "status": "DRY-RUN",
-      "detail": "npm run build (vite, variables VITE_*) → dist/ → Amplify"
+      "status": "OK",
+      "detail": "https://dev.d3ray4qwjt9hc.amplifyapp.com"
     },
     {
       "step": "horario de servicio",
-      "status": "DRY-RUN",
-      "detail": "start · warmup 04:45 · start 05:00 · stop 19:00 (America/Costa_Rica)"
+      "status": "OK",
+      "detail": "{\"action\": \"start\", \"cluster_before\": \"available\", \"cluster\": \"available\", \"functions\": 4}"
     }
   ],
-  "finished_at": "2026-10-09T13:29:44+00:00"
+  "finished_at": "2026-10-09T13:45:58+00:00"
 }
