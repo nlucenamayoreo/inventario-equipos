@@ -1,0 +1,34 @@
+# Configuración de despliegue (aws-project-deployer). Horario en la zona indicada; days: * o MON-FRI.
+# Para usar una VPC existente: create_network: false + existing_vpc_id + existing_private_subnet_ids
+# (subredes privadas con salida a Internet por NAT).
+service_hours:
+  enabled: true
+  timezone: America/Costa_Rica
+  warmup: 04:45
+  start: 05:00
+  stop: '19:00'
+  days: '*'
+environments:
+  dev:
+    # VPC compartida con NAT (ver deploy/RED.md)
+    create_network: false
+    existing_vpc_id: vpc-07cc5dc27cffa3a8e
+    existing_private_subnet_ids:
+      - subnet-00d2e9dabe21468f6
+      - subnet-07c0a6ffc35443279
+    use_rds_proxy: false
+    db_min_capacity: 0.5
+    db_max_capacity: 1
+    db_engine_version: '16.15'   # 16.6 (valor por defecto de la skill) ya no existe en AWS
+  qa:
+    create_network: true
+    vpc_cidr: 10.41.0.0/16
+    use_rds_proxy: false
+    db_min_capacity: 0.5
+    db_max_capacity: 2
+  prod:
+    create_network: true
+    vpc_cidr: 10.42.0.0/16
+    use_rds_proxy: true
+    db_min_capacity: 0.5
+    db_max_capacity: 8
