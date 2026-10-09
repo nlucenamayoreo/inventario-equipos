@@ -31,7 +31,9 @@ export function TarjetaCarga({
           >
             {c.ocupado === 'descarga' ? 'Generando…' : 'Descargar machote (.xlsx)'}
           </button>
-          <span className="sec-nota">Incluye los catálogos vigentes en las listas desplegables.</span>
+          <span className="sec-nota">
+            Incluye los catálogos vigentes en las listas desplegables.
+          </span>
         </div>
 
         <div className="fila">
@@ -68,7 +70,9 @@ export function TarjetaCarga({
             onClick={c.aplicar}
             disabled={!c.puedeAplicar || c.pendiente}
             title={
-              c.puedeAplicar ? undefined : 'Valide el archivo sin errores para poder aplicar la carga.'
+              c.puedeAplicar
+                ? undefined
+                : 'Valide el archivo sin errores para poder aplicar la carga.'
             }
           >
             {c.acc.pendiente ? 'Aplicando…' : 'Aplicar carga'}

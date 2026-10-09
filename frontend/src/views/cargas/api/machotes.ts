@@ -31,23 +31,152 @@ export const ESTADOS_CARGA = ['Disponible', 'En reparación', 'De baja'];
 
 export const COLUMNAS: Record<TipoCarga, Columna[]> = {
   usuarios: [
-    { clave: 'codigo', encabezado: 'Código', obligatoria: true, ancho: 14, texto: true, descripcion: 'Código único del colaborador.', ejemplo: 'E-1025' },
-    { clave: 'nombre', encabezado: 'Nombre', obligatoria: true, ancho: 32, descripcion: 'Nombre completo.', ejemplo: 'María Pérez' },
-    { clave: 'correo', encabezado: 'Correo', obligatoria: false, ancho: 30, descripcion: 'Correo corporativo (se usa para enlazar con Google Workspace).', ejemplo: 'mperez@mayoreo.biz' },
-    { clave: 'cargo', encabezado: 'Cargo', obligatoria: true, ancho: 26, lista: 'cargos', estricta: true, descripcion: 'Cargo tal como está en Catálogos; define la dotación de equipos.', ejemplo: 'Analista' },
-    { clave: 'departamento', encabezado: 'Departamento', obligatoria: true, ancho: 26, lista: 'departamentos', estricta: true, descripcion: 'Departamento tal como está en Catálogos.', ejemplo: 'Contabilidad' },
-    { clave: 'silo', encabezado: 'Silo', obligatoria: false, ancho: 18, lista: 'silos', estricta: true, descripcion: 'Obligatorio solo si el nombre del departamento se repite en varios silos.', ejemplo: 'Mayoreo' },
+    {
+      clave: 'codigo',
+      encabezado: 'Código',
+      obligatoria: true,
+      ancho: 14,
+      texto: true,
+      descripcion: 'Código único del colaborador.',
+      ejemplo: 'E-1025',
+    },
+    {
+      clave: 'nombre',
+      encabezado: 'Nombre',
+      obligatoria: true,
+      ancho: 32,
+      descripcion: 'Nombre completo.',
+      ejemplo: 'María Pérez',
+    },
+    {
+      clave: 'correo',
+      encabezado: 'Correo',
+      obligatoria: false,
+      ancho: 30,
+      descripcion: 'Correo corporativo (se usa para enlazar con Google Workspace).',
+      ejemplo: 'mperez@mayoreo.biz',
+    },
+    {
+      clave: 'cargo',
+      encabezado: 'Cargo',
+      obligatoria: true,
+      ancho: 26,
+      lista: 'cargos',
+      estricta: true,
+      descripcion: 'Cargo tal como está en Catálogos; define la dotación de equipos.',
+      ejemplo: 'Analista',
+    },
+    {
+      clave: 'departamento',
+      encabezado: 'Departamento',
+      obligatoria: true,
+      ancho: 26,
+      lista: 'departamentos',
+      estricta: true,
+      descripcion: 'Departamento tal como está en Catálogos.',
+      ejemplo: 'Contabilidad',
+    },
+    {
+      clave: 'silo',
+      encabezado: 'Silo',
+      obligatoria: false,
+      ancho: 18,
+      lista: 'silos',
+      estricta: true,
+      descripcion: 'Obligatorio solo si el nombre del departamento se repite en varios silos.',
+      ejemplo: 'Mayoreo',
+    },
   ],
   activos: [
-    { clave: 'tipo', encabezado: 'Tipo', obligatoria: true, ancho: 16, lista: 'tipos', estricta: true, descripcion: 'Tipo de equipo del catálogo.', ejemplo: 'Laptop' },
-    { clave: 'marca', encabezado: 'Marca', obligatoria: true, ancho: 16, lista: 'marcas', estricta: false, descripcion: 'Marca existente o una nueva (se crea si tiene permiso para gestionar artículos).', ejemplo: 'Dell' },
-    { clave: 'modelo', encabezado: 'Modelo', obligatoria: true, ancho: 22, lista: 'modelos', estricta: false, descripcion: 'Modelo existente o uno nuevo (se crea si tiene permiso para gestionar artículos).', ejemplo: 'Latitude 5440' },
-    { clave: 'especificaciones', encabezado: 'Especificaciones', obligatoria: false, ancho: 28, descripcion: 'Texto libre con detalles del artículo.', ejemplo: 'Intel Core i5, 14"' },
-    { clave: 'caracteristicas', encabezado: 'Características', obligatoria: false, ancho: 28, descripcion: 'Pares «Nombre: valor» separados por punto y coma.', ejemplo: 'RAM: 16 GB; Disco: 512 GB' },
-    { clave: 'serial', encabezado: 'Serial', obligatoria: true, ancho: 20, texto: true, descripcion: 'Número de serie; único (sin distinguir mayúsculas).', ejemplo: 'ABC123XYZ' },
-    { clave: 'estado', encabezado: 'Estado', obligatoria: false, ancho: 16, lista: 'estados', estricta: true, descripcion: 'Disponible, En reparación o De baja. Vacío = Disponible.', ejemplo: 'Disponible' },
-    { clave: 'codigo_usuario', encabezado: 'Código usuario', obligatoria: false, ancho: 16, texto: true, lista: 'codigosUsuario', estricta: false, descripcion: 'Código del usuario al que se asigna el equipo. Vacío = queda sin asignar.', ejemplo: 'E-1025' },
-    { clave: 'correo_custodio', encabezado: 'Correo custodio', obligatoria: false, ancho: 30, lista: 'correosCustodio', estricta: true, descripcion: 'Persona con acceso responsable del resguardo si no se asigna. Vacío = quien hace la carga.', ejemplo: 'soporte@mayoreo.biz' },
+    {
+      clave: 'tipo',
+      encabezado: 'Tipo',
+      obligatoria: true,
+      ancho: 16,
+      lista: 'tipos',
+      estricta: true,
+      descripcion: 'Tipo de equipo del catálogo.',
+      ejemplo: 'Laptop',
+    },
+    {
+      clave: 'marca',
+      encabezado: 'Marca',
+      obligatoria: true,
+      ancho: 16,
+      lista: 'marcas',
+      estricta: false,
+      descripcion:
+        'Marca existente o una nueva (se crea si tiene permiso para gestionar artículos).',
+      ejemplo: 'Dell',
+    },
+    {
+      clave: 'modelo',
+      encabezado: 'Modelo',
+      obligatoria: true,
+      ancho: 22,
+      lista: 'modelos',
+      estricta: false,
+      descripcion:
+        'Modelo existente o uno nuevo (se crea si tiene permiso para gestionar artículos).',
+      ejemplo: 'Latitude 5440',
+    },
+    {
+      clave: 'especificaciones',
+      encabezado: 'Especificaciones',
+      obligatoria: false,
+      ancho: 28,
+      descripcion: 'Texto libre con detalles del artículo.',
+      ejemplo: 'Intel Core i5, 14"',
+    },
+    {
+      clave: 'caracteristicas',
+      encabezado: 'Características',
+      obligatoria: false,
+      ancho: 28,
+      descripcion: 'Pares «Nombre: valor» separados por punto y coma.',
+      ejemplo: 'RAM: 16 GB; Disco: 512 GB',
+    },
+    {
+      clave: 'serial',
+      encabezado: 'Serial',
+      obligatoria: true,
+      ancho: 20,
+      texto: true,
+      descripcion: 'Número de serie; único (sin distinguir mayúsculas).',
+      ejemplo: 'ABC123XYZ',
+    },
+    {
+      clave: 'estado',
+      encabezado: 'Estado',
+      obligatoria: false,
+      ancho: 16,
+      lista: 'estados',
+      estricta: true,
+      descripcion: 'Disponible, En reparación o De baja. Vacío = Disponible.',
+      ejemplo: 'Disponible',
+    },
+    {
+      clave: 'codigo_usuario',
+      encabezado: 'Código usuario',
+      obligatoria: false,
+      ancho: 16,
+      texto: true,
+      lista: 'codigosUsuario',
+      estricta: false,
+      descripcion: 'Código del usuario al que se asigna el equipo. Vacío = queda sin asignar.',
+      ejemplo: 'E-1025',
+    },
+    {
+      clave: 'correo_custodio',
+      encabezado: 'Correo custodio',
+      obligatoria: false,
+      ancho: 30,
+      lista: 'correosCustodio',
+      estricta: true,
+      descripcion:
+        'Persona con acceso responsable del resguardo si no se asigna. Vacío = quien hace la carga.',
+      ejemplo: 'soporte@mayoreo.biz',
+    },
   ],
 };
 
@@ -87,7 +216,9 @@ export function listasDesdeModelo(m: Modelo): ListasMachote {
     modelos: act(m.modelos),
     estados: ESTADOS_CARGA,
     codigosUsuario: unicos(
-      m.usuarios.filter((u) => u.estado === 'activo' || u.estado === 'vacaciones').map((u) => u.codigo),
+      m.usuarios
+        .filter((u) => u.estado === 'activo' || u.estado === 'vacaciones')
+        .map((u) => u.codigo),
     ),
     correosCustodio: unicos(m.operadores.filter((o) => o.activo).map((o) => o.correo)),
   };
@@ -114,7 +245,10 @@ export function celdaATexto(v: unknown): string {
   if (typeof v === 'object') {
     const o = v as Record<string, unknown>;
     if (Array.isArray(o.richText))
-      return o.richText.map((r) => celdaATexto((r as { text?: unknown }).text)).join('').trim();
+      return o.richText
+        .map((r) => celdaATexto((r as { text?: unknown }).text))
+        .join('')
+        .trim();
     if ('result' in o) return celdaATexto(o.result);
     if ('text' in o) {
       const t = celdaATexto(o.text);
@@ -142,7 +276,11 @@ export interface FilasLeidas {
 }
 
 /** Asocia cada columna del archivo con su clave del backend y arma las filas no vacías. */
-export function mapearFilas(encabezados: unknown[], filas: FilaExcel[], columnas: Columna[]): FilasLeidas {
+export function mapearFilas(
+  encabezados: unknown[],
+  filas: FilaExcel[],
+  columnas: Columna[],
+): FilasLeidas {
   const porNombre = new Map<string, Columna>();
   for (const c of columnas) {
     porNombre.set(normalizarEncabezado(c.encabezado), c);
@@ -205,13 +343,17 @@ function encabezado(ws: Worksheet, titulos: string[]) {
 
 const letra = (n: number) => {
   let s = '';
-  for (let x = n; x > 0; x = Math.floor((x - 1) / 26)) s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
+  for (let x = n; x > 0; x = Math.floor((x - 1) / 26))
+    s = String.fromCharCode(65 + ((x - 1) % 26)) + s;
   return s;
 };
 
 /** Agrega la validación a un rango completo (exceljs la escribe como un solo `sqref`). */
 function validarRango(ws: Worksheet, rango: string, v: import('exceljs').DataValidation) {
-  (ws as unknown as { dataValidations: { add(a: string, v: unknown): void } }).dataValidations.add(rango, v);
+  (ws as unknown as { dataValidations: { add(a: string, v: unknown): void } }).dataValidations.add(
+    rango,
+    v,
+  );
 }
 
 function hojaListas(wb: Workbook, listas: ListasMachote, columnas: Columna[]) {
@@ -274,7 +416,10 @@ export async function generarMachote(tipo: TipoCarga, listas: ListasMachote): Pr
     width: c.ancho,
     style: c.texto ? { numFmt: '@' } : {},
   }));
-  encabezado(ws, columnas.map((c) => c.encabezado));
+  encabezado(
+    ws,
+    columnas.map((c) => c.encabezado),
+  );
   hojaInstrucciones(wb, tipo, columnas);
   const rangos = hojaListas(wb, listas, columnas);
 
@@ -292,7 +437,9 @@ export async function generarMachote(tipo: TipoCarga, listas: ListasMachote): Pr
       error: `Elija un valor de la lista de ${c.encabezado.toLowerCase()}.`,
     });
   });
-  wb.views = [{ activeTab: 0, x: 0, y: 0, width: 20000, height: 12000, firstSheet: 0, visibility: 'visible' }];
+  wb.views = [
+    { activeTab: 0, x: 0, y: 0, width: 20000, height: 12000, firstSheet: 0, visibility: 'visible' },
+  ];
   return (await wb.xlsx.writeBuffer()) as ArrayBuffer;
 }
 
@@ -305,7 +452,9 @@ export async function leerMachote(tipo: TipoCarga, datos: ArrayBuffer): Promise<
   try {
     await wb.xlsx.load(datos);
   } catch {
-    throw new ErrorMachote('No se pudo leer el archivo. Verifique que sea un Excel (.xlsx) válido.');
+    throw new ErrorMachote(
+      'No se pudo leer el archivo. Verifique que sea un Excel (.xlsx) válido.',
+    );
   }
   const columnas = COLUMNAS[tipo];
   const buscado = normalizarEncabezado(HOJA[tipo]);
@@ -326,7 +475,8 @@ export async function leerMachote(tipo: TipoCarga, datos: ArrayBuffer): Promise<
     throw new ErrorMachote(
       `La hoja «${ws.name}» no tiene las columnas: ${leidas.faltantes.join(', ')}. Use el machote de ${tipo}.`,
     );
-  if (!leidas.filas.length) throw new ErrorMachote('El archivo no tiene filas con datos para cargar.');
+  if (!leidas.filas.length)
+    throw new ErrorMachote('El archivo no tiene filas con datos para cargar.');
   if (leidas.filas.length > MAX_FILAS)
     throw new ErrorMachote(
       `El archivo tiene ${leidas.filas.length} filas; el máximo por carga es ${MAX_FILAS}. Divídalo en varios archivos.`,

@@ -35,8 +35,8 @@ export function CargasPage({ m }: { m: Modelo }) {
         {puedeUsuarios && (
           <TarjetaCarga titulo="Usuarios" c={usuarios}>
             <p style={{ margin: 0 }}>
-              Alta de usuarios con su código, nombre, correo, cargo, departamento y silo. El cargo
-              y el departamento deben existir en Catálogos.
+              Alta de usuarios con su código, nombre, correo, cargo, departamento y silo. El cargo y
+              el departamento deben existir en Catálogos.
             </p>
             <div className="banner banner-mid">
               <strong>Carga preliminar.</strong>

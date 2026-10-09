@@ -43,13 +43,29 @@ describe('mapearFilas', () => {
       [
         { numero: 2, valores: [undefined, 'E1', 'Ana', null, 'Analista', 'Ventas', 'x'] },
         { numero: 3, valores: [undefined, '', ' ', null] },
-        { numero: 5, valores: [undefined, 77, 'Luis', { text: 'l@m.biz', hyperlink: 'mailto:l@m.biz' }, 'Jefe', 'TI'] },
+        {
+          numero: 5,
+          valores: [
+            undefined,
+            77,
+            'Luis',
+            { text: 'l@m.biz', hyperlink: 'mailto:l@m.biz' },
+            'Jefe',
+            'TI',
+          ],
+        },
       ],
       cols,
     );
     expect(r.faltantes).toEqual([]);
     expect(r.numeros).toEqual([2, 5]);
-    expect(r.filas[0]).toEqual({ codigo: 'E1', nombre: 'Ana', correo: null, cargo: 'Analista', departamento: 'Ventas' });
+    expect(r.filas[0]).toEqual({
+      codigo: 'E1',
+      nombre: 'Ana',
+      correo: null,
+      cargo: 'Analista',
+      departamento: 'Ventas',
+    });
     expect(r.filas[1]).toMatchObject({ codigo: '77', correo: 'l@m.biz' });
     expect(filaReal(r.numeros, 2)).toBe(2);
     expect(filaReal(r.numeros, 3)).toBe(5);

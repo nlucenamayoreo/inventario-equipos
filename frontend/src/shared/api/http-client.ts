@@ -82,5 +82,6 @@ export const httpClient: ApiClient = {
 
   importarUsuarios: (filas, confirmar) =>
     send('post', '/importaciones/usuarios', { filas, confirmar }),
-  importarActivos: (filas, confirmar) => send('post', '/importaciones/activos', { filas, confirmar }),
+  importarActivos: (filas, confirmar) =>
+    send('post', '/importaciones/activos', { filas, confirmar }),
 };

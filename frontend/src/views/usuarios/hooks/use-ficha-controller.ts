@@ -5,13 +5,7 @@ import { useAccion } from '../../../shared/state/datos';
 import { usuariosApi } from '../api/usuarios-api';
 
 export type Panel =
-  | null
-  | 'editar'
-  | 'vacaciones'
-  | 'desactivar'
-  | 'eliminar'
-  | 'liberar'
-  | 'reasignar';
+  null | 'editar' | 'vacaciones' | 'desactivar' | 'eliminar' | 'liberar' | 'reasignar';
 
 export interface FormVacaciones {
   desde: string;
