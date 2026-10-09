@@ -13,12 +13,12 @@ frontend:
   primary_color: "#0093D0"
 target:
   aws_region: us-west-2
-roles: [admin_ti, consulta]
+roles: [Superadministrador, Administrador Intelix, Analista Intelix, Gerente de sistemas, Visitante]
 requirements:
   - id: RF-01
     title: Sesión y roles
-    description: Ingreso con Cognito; admin_ti modifica todo, consulta solo lee. Se muestra la última sincronización con Google Workspace.
-    roles: [admin_ti, consulta]
+    description: Ingreso con Cognito; las vistas y acciones dependen de los permisos del rol del operador (sin rol, solo lectura). Se muestra la última sincronización con Google Workspace.
+    roles: [Superadministrador, Visitante]
   - id: RF-02
     title: Silos y departamentos
     description: Alta y listado de silos y de departamentos (únicos por silo).
@@ -59,11 +59,38 @@ requirements:
     title: Resumen de cobertura
     description: Indicadores, cobertura por silo y por departamento (solo tipos obligatorios), stock y matriz usuario por tipo.
     roles: [admin_ti, consulta]
+  - id: RF-12
+    title: Roles y personas con acceso
+    description: Crear roles con sus permisos, invitar personas (Cognito envía la contraseña temporal), asignarles rol y activar o desactivar su acceso. Superadministrador fijo con todos los permisos.
+    roles: [Superadministrador]
+  - id: RF-13
+    title: Responsable de resguardo
+    description: Todo equipo disponible, en resguardo o en reparación tiene un responsable de resguardo (persona con acceso); al entregar, liberar o recibir un equipo se indica quién queda a cargo.
+    roles: [Administrador Intelix, Analista Intelix]
+  - id: RF-14
+    title: Límite de equipos por persona
+    description: Máximo de equipos del mismo tipo por persona, configurable por tipo (Laptop 2 - la propia y una de resguardo o préstamo -, demás 1); cuentan los asignados y los recibidos en préstamo.
+    roles: [Administrador Intelix, Analista Intelix]
+  - id: RF-15
+    title: Aprobación de reasignaciones
+    description: Pasar un equipo de una persona a otra se solicita y lo aprueba o rechaza el gerente de sistemas (no el mismo solicitante); al aprobar se revalidan cargo y límite y queda en el historial.
+    roles: [Gerente de sistemas, Analista Intelix]
+  - id: RF-16
+    title: Cargas masivas con machote
+    description: Machotes Excel descargables de usuarios y de activos con listas desplegables; vista previa con errores por fila y aplicación todo o nada; los activos pueden quedar asignados y crear marcas, modelos y artículos faltantes.
+    roles: [Administrador Intelix]
+  - id: RF-17
+    title: Marcas, modelos y características
+    description: Catálogos de marcas, modelos (por marca y tipo) y características con valores por tipo; los artículos se crean eligiendo modelo y valores.
+    roles: [Administrador Intelix]
 modules:
   - {name: sesion, description: Operador actual y estado de la sincronización, entities: [sync_google_log]}
   - {name: catalogos, description: Silos, departamentos, tipos, artículos y cargos, entities: [silo, departamento, tipo_equipo, articulo, cargo, cargo_dotacion]}
   - {name: usuarios, description: Colaboradores y vacaciones, entities: [usuario, vacacion]}
   - {name: activos, description: Activos e historial, entities: [activo, activo_movimiento]}
+  - {name: seguridad, description: Roles, permisos y personas con acceso, entities: [permiso, rol, rol_permiso, operador]}
+  - {name: reasignaciones, description: Solicitudes y aprobación de reasignaciones, entities: [reasignacion]}
+  - {name: importaciones, description: Cargas masivas desde machotes Excel, entities: [usuario, activo]}
 features:
   storage_buckets: []
   realtime_tables: []

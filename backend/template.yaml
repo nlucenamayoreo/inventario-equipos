@@ -274,7 +274,8 @@ Resources:
     Properties:
       FunctionName: !Sub '${AWS::StackName}-catalogos-api'
       Description: INVENTARIO - CATALOGOS_API | GET /silos, POST /silos, GET /departamentos, POST /departamentos, GET /tipos-equipo,
-        POST /tipos-equipo, GET /articulos, POST /articulos, GET /cargos, POST /cargos, PUT /cargos/{cargoId}/dotacion/{tipoId}
+        POST /tipos-equipo, GET /articulos, POST /articulos, GET /cargos, POST /cargos, PUT /cargos/{cargoId}/dotacion/{tipoId},
+        PATCH /tipos-equipo/{
       Handler: entrypoints.lambda_handlers.catalogos.handler
       LoggingConfig:
         LogFormat: JSON
@@ -346,6 +347,66 @@ Resources:
             RestApiId: !Ref 'Api'
             Path: /cargos/{cargoId}/dotacion/{tipoId}
             Method: put
+        PatchTiposEquipoTipoId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /tipos-equipo/{tipoId}
+            Method: patch
+        GetMarcas:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /marcas
+            Method: get
+        PostMarcas:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /marcas
+            Method: post
+        PatchMarcasMarcaId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /marcas/{marcaId}
+            Method: patch
+        GetModelos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /modelos
+            Method: get
+        PostModelos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /modelos
+            Method: post
+        PatchModelosModeloId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /modelos/{modeloId}
+            Method: patch
+        GetCaracteristicas:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /caracteristicas
+            Method: get
+        PostCaracteristicas:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /caracteristicas
+            Method: post
+        PatchCaracteristicasCaracteristicaId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /caracteristicas/{caracteristicaId}
+            Method: patch
       Role: !GetAtt 'DbRole.Arn'
   CatalogosApiErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -530,10 +591,210 @@ Resources:
       Dimensions:
       - Name: FunctionName
         Value: !Ref 'ActivosApiFunction'
+  SeguridadApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-seguridad-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  SeguridadApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-seguridad-api'
+      Description: INVENTARIO - SEGURIDAD_API | GET /permisos, GET /roles, POST /roles, PATCH /roles/{rolId}, GET /operadores,
+        POST /operadores, PATCH /operadores/{operadorId}
+      Handler: entrypoints.lambda_handlers.seguridad.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'SeguridadApiLogGroup'
+      Events:
+        GetPermisos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /permisos
+            Method: get
+        GetRoles:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /roles
+            Method: get
+        PostRoles:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /roles
+            Method: post
+        PatchRolesRolId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /roles/{rolId}
+            Method: patch
+        GetOperadores:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /operadores
+            Method: get
+        PostOperadores:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /operadores
+            Method: post
+        PatchOperadoresOperadorId:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /operadores/{operadorId}
+            Method: patch
+      Role: !GetAtt 'CognitoAdminDbRole.Arn'
+  SeguridadApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-seguridad-api-errors'
+      AlarmDescription: INVENTARIO - errores en SeguridadApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'SeguridadApiFunction'
+  ReasignacionesApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-reasignaciones-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  ReasignacionesApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-reasignaciones-api'
+      Description: INVENTARIO - REASIGNACIONES_API | GET /reasignaciones, POST /reasignaciones, POST /reasignaciones/{reasignacionId}/aprobar,
+        POST /reasignaciones/{reasignacionId}/rechazar, POST /reasignaciones/{reasignacionId}/cancelar
+      Handler: entrypoints.lambda_handlers.reasignaciones.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'ReasignacionesApiLogGroup'
+      Events:
+        GetReasignaciones:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /reasignaciones
+            Method: get
+        PostReasignaciones:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /reasignaciones
+            Method: post
+        PostReasignacionesReasignacionIdAprobar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /reasignaciones/{reasignacionId}/aprobar
+            Method: post
+        PostReasignacionesReasignacionIdRechazar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /reasignaciones/{reasignacionId}/rechazar
+            Method: post
+        PostReasignacionesReasignacionIdCancelar:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /reasignaciones/{reasignacionId}/cancelar
+            Method: post
+      Role: !GetAtt 'DbRole.Arn'
+  ReasignacionesApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-reasignaciones-api-errors'
+      AlarmDescription: INVENTARIO - errores en ReasignacionesApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'ReasignacionesApiFunction'
+  ImportacionesApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-importaciones-api'
+      RetentionInDays: !If [IsProduction, 30, 7]
+  ImportacionesApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-importaciones-api'
+      Description: INVENTARIO - IMPORTACIONES_API | POST /importaciones/usuarios, POST /importaciones/activos
+      Handler: entrypoints.lambda_handlers.importaciones.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref 'ImportacionesApiLogGroup'
+      Events:
+        PostImportacionesUsuarios:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /importaciones/usuarios
+            Method: post
+        PostImportacionesActivos:
+          Type: Api
+          Properties:
+            RestApiId: !Ref 'Api'
+            Path: /importaciones/activos
+            Method: post
+      Role: !GetAtt 'DbRole.Arn'
+  ImportacionesApiErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-importaciones-api-errors'
+      AlarmDescription: INVENTARIO - errores en ImportacionesApiFunction
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Threshold: 1
+      Period: 300
+      Statistic: Sum
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+      - HasAlarmTopic
+      - - !Ref 'AlarmTopicArn'
+      - !Ref 'AWS::NoValue'
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+      - Name: FunctionName
+        Value: !Ref 'ImportacionesApiFunction'
   DbRole:
     Type: AWS::IAM::Role
     Properties:
-      Description: 'INVENTARIO - rol compartido por 4 función(es): db'
+      Description: 'INVENTARIO - rol compartido por 6 función(es): db'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -554,6 +815,8 @@ Resources:
             Resource:
             - !GetAtt 'ActivosApiLogGroup.Arn'
             - !GetAtt 'CatalogosApiLogGroup.Arn'
+            - !GetAtt 'ImportacionesApiLogGroup.Arn'
+            - !GetAtt 'ReasignacionesApiLogGroup.Arn'
             - !GetAtt 'SesionApiLogGroup.Arn'
             - !GetAtt 'UsuariosApiLogGroup.Arn'
           - Sid: VpcNetworkInterfaces
@@ -570,6 +833,56 @@ Resources:
             Action:
             - secretsmanager:GetSecretValue
             Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${DbSecretName}-??????'
+  CognitoAdminDbRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: 'INVENTARIO - rol compartido por 1 función(es): cognito_admin, db'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: least-privilege
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: WriteOwnLogs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - !GetAtt 'SeguridadApiLogGroup.Arn'
+          - Sid: VpcNetworkInterfaces
+            Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            - ec2:AssignPrivateIpAddresses
+            - ec2:UnassignPrivateIpAddresses
+            Resource: '*'
+          - Sid: ReadDbSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${DbSecretName}-??????'
+          - Sid: CognitoAdmin
+            Effect: Allow
+            Action:
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminUpdateUserAttributes
+            - cognito-idp:AdminDisableUser
+            - cognito-idp:AdminAddUserToGroup
+            - cognito-idp:AdminRemoveUserFromGroup
+            Resource: !If
+            - CreateUserPool
+            - !GetAtt 'UserPool.Arn'
+            - !Ref 'CognitoUserPoolArn'
 Outputs:
   UserPoolId:
     Condition: CreateUserPool

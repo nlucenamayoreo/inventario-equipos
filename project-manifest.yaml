@@ -44,6 +44,11 @@ modules:
   - articulo
   - cargo
   - cargo_dotacion
+  - marca
+  - modelo
+  - caracteristica
+  - caracteristica_valor
+  - articulo_caracteristica
   use_cases:
   - ListSilosUseCase
   - CreateSiloUseCase
@@ -56,6 +61,16 @@ modules:
   - ListCargosUseCase
   - CreateCargoUseCase
   - UpdateDotacionUseCase
+  - UpdateTipoEquipoUseCase
+  - ListMarcasUseCase
+  - CreateMarcaUseCase
+  - UpdateMarcaUseCase
+  - ListModelosUseCase
+  - CreateModeloUseCase
+  - UpdateModeloUseCase
+  - ListCaracteristicasUseCase
+  - CreateCaracteristicaUseCase
+  - UpdateCaracteristicaUseCase
 - name: usuarios
   entities:
   - usuario
@@ -80,6 +95,36 @@ modules:
   - ReleaseActivoUseCase
   - ChangeActivoEstadoUseCase
   - ListMovimientosUseCase
+- name: seguridad
+  entities:
+  - permiso
+  - rol
+  - rol_permiso
+  - operador
+  use_cases:
+  - ListPermisosUseCase
+  - ListRolesUseCase
+  - CreateRolUseCase
+  - UpdateRolUseCase
+  - ListOperadoresUseCase
+  - InviteOperadorUseCase
+  - UpdateOperadorUseCase
+- name: reasignaciones
+  entities:
+  - reasignacion
+  use_cases:
+  - ListReasignacionesUseCase
+  - RequestReasignacionUseCase
+  - ApproveReasignacionUseCase
+  - RejectReasignacionUseCase
+  - CancelReasignacionUseCase
+- name: importaciones
+  entities:
+  - usuario
+  - activo
+  use_cases:
+  - ImportUsuariosUseCase
+  - ImportActivosUseCase
 api_endpoints:
 - method: GET
   path: /me
@@ -175,6 +220,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-03
+  - RF-17
 - method: GET
   path: /cargos
   function: CatalogosApi
@@ -240,6 +286,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-07
+  - RF-13
 - method: POST
   path: /usuarios/{usuarioId}/vacaciones
   function: UsuariosApi
@@ -249,6 +296,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-06
+  - RF-13
 - method: POST
   path: /usuarios/{usuarioId}/vacaciones/finalizar
   function: UsuariosApi
@@ -258,6 +306,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-06
+  - RF-13
 - method: POST
   path: /usuarios/{usuarioId}/desactivar
   function: UsuariosApi
@@ -267,6 +316,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-07
+  - RF-13
 - method: POST
   path: /usuarios/{usuarioId}/reactivar
   function: UsuariosApi
@@ -276,6 +326,7 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-07
+  - RF-13
 - method: GET
   path: /activos
   function: ActivosApi
@@ -295,6 +346,8 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-08
+  - RF-13
+  - RF-14
 - method: POST
   path: /activos/{activoId}/asignar
   function: ActivosApi
@@ -304,6 +357,8 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-09
+  - RF-13
+  - RF-14
 - method: POST
   path: /activos/{activoId}/liberar
   function: ActivosApi
@@ -313,6 +368,8 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-09
+  - RF-13
+  - RF-14
 - method: POST
   path: /activos/{activoId}/estado
   function: ActivosApi
@@ -322,6 +379,8 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-09
+  - RF-13
+  - RF-14
 - method: GET
   path: /activos/{activoId}/movimientos
   function: ActivosApi
@@ -331,6 +390,233 @@ api_endpoints:
   auth: cognito
   requirements:
   - RF-10
+- method: PATCH
+  path: /tipos-equipo/{tipoId}
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: UpdateTipoEquipoUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-03
+  - RF-14
+- method: GET
+  path: /marcas
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListMarcasUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: POST
+  path: /marcas
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateMarcaUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: PATCH
+  path: /marcas/{marcaId}
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: UpdateMarcaUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: GET
+  path: /modelos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListModelosUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: POST
+  path: /modelos
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateModeloUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: PATCH
+  path: /modelos/{modeloId}
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: UpdateModeloUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: GET
+  path: /caracteristicas
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: ListCaracteristicasUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: POST
+  path: /caracteristicas
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: CreateCaracteristicaUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: PATCH
+  path: /caracteristicas/{caracteristicaId}
+  function: CatalogosApi
+  handler: entrypoints.lambda_handlers.catalogos.handler
+  use_case: UpdateCaracteristicaUseCase
+  module: catalogos
+  auth: cognito
+  requirements:
+  - RF-17
+- method: GET
+  path: /permisos
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: ListPermisosUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: GET
+  path: /roles
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: ListRolesUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: POST
+  path: /roles
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: CreateRolUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: PATCH
+  path: /roles/{rolId}
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: UpdateRolUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: GET
+  path: /operadores
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: ListOperadoresUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  - RF-13
+  cognito_admin: true
+- method: POST
+  path: /operadores
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: InviteOperadorUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: PATCH
+  path: /operadores/{operadorId}
+  function: SeguridadApi
+  handler: entrypoints.lambda_handlers.seguridad.handler
+  use_case: UpdateOperadorUseCase
+  module: seguridad
+  auth: cognito
+  requirements:
+  - RF-12
+  cognito_admin: true
+- method: GET
+  path: /reasignaciones
+  function: ReasignacionesApi
+  handler: entrypoints.lambda_handlers.reasignaciones.handler
+  use_case: ListReasignacionesUseCase
+  module: reasignaciones
+  auth: cognito
+  requirements:
+  - RF-15
+- method: POST
+  path: /reasignaciones
+  function: ReasignacionesApi
+  handler: entrypoints.lambda_handlers.reasignaciones.handler
+  use_case: RequestReasignacionUseCase
+  module: reasignaciones
+  auth: cognito
+  requirements:
+  - RF-15
+- method: POST
+  path: /reasignaciones/{reasignacionId}/aprobar
+  function: ReasignacionesApi
+  handler: entrypoints.lambda_handlers.reasignaciones.handler
+  use_case: ApproveReasignacionUseCase
+  module: reasignaciones
+  auth: cognito
+  requirements:
+  - RF-15
+- method: POST
+  path: /reasignaciones/{reasignacionId}/rechazar
+  function: ReasignacionesApi
+  handler: entrypoints.lambda_handlers.reasignaciones.handler
+  use_case: RejectReasignacionUseCase
+  module: reasignaciones
+  auth: cognito
+  requirements:
+  - RF-15
+- method: POST
+  path: /reasignaciones/{reasignacionId}/cancelar
+  function: ReasignacionesApi
+  handler: entrypoints.lambda_handlers.reasignaciones.handler
+  use_case: CancelReasignacionUseCase
+  module: reasignaciones
+  auth: cognito
+  requirements:
+  - RF-15
+- method: POST
+  path: /importaciones/usuarios
+  function: ImportacionesApi
+  handler: entrypoints.lambda_handlers.importaciones.handler
+  use_case: ImportUsuariosUseCase
+  module: importaciones
+  auth: cognito
+  requirements:
+  - RF-16
+  timeout: 30
+- method: POST
+  path: /importaciones/activos
+  function: ImportacionesApi
+  handler: entrypoints.lambda_handlers.importaciones.handler
+  use_case: ImportActivosUseCase
+  module: importaciones
+  auth: cognito
+  requirements:
+  - RF-16
+  timeout: 30
 async_workers: []
 storage_buckets: []
 realtime:
@@ -359,18 +645,24 @@ environment_variables:
   - VITE_REALTIME_ENABLED
 authorization_rules:
 - table: '*'
-  policy: Solo admin_ti modifica; consulta (o sin grupo) solo lee
+  policy: Permisos por rol configurable (tbl_rol_permiso); el grupo admin_ti y el rol Superadministrador tienen
+    todos; sin operador solo lectura
   command: INSERT/UPDATE/DELETE
   roles:
   - admin_ti
   using: null
   with_check: null
-  enforced_in: application.use_cases.common.require_admin en cada caso de uso de escritura
+  enforced_in: application.use_cases.common.require(principal, permiso) en cada caso de uso de escritura; el principal
+    se completa en ResolveOperadorUseCase
 structural_changes:
 - 'Endpoints agrupados en una Lambda por módulo (sesion, catalogos, usuarios, activos) con despacho por ruta: 10
   usuarios sin concurrencia, menos arranques en frío.'
 - 'Contrato REST de docs/API.md sin el prefijo /api: la URL base es la del stage de API Gateway (VITE_API_BASE_URL).'
 - 'Errores en el formato estándar {error: {code, title, message, details}}; las reglas de negocio responden 422.'
+- 'Roles y permisos en la base (tbl_rol, tbl_rol_permiso, tbl_operador) en lugar de grupos de Cognito: se administran
+  desde la aplicación; Cognito solo autentica e invita.'
+- 'Cargas masivas: el navegador lee el machote .xlsx y envía las filas en JSON; el backend valida fila por fila
+  (savepoint) y aplica todo o nada.'
 incompatibilities: []
 migration_risks:
 - 'Sincronización con Google Workspace (docs/INTEGRACION_GOOGLE_WORKSPACE.md) pendiente: el estado se lee de sync_google_log
@@ -386,13 +678,27 @@ screens:
   - RF-06
   - RF-07
   - RF-09
+  - RF-13
+  - RF-14
+  - RF-16
 - page: src/views/activos/pages/activos-page.tsx
   requirements:
   - RF-08
   - RF-09
   - RF-10
+  - RF-13
+  - RF-15
+  - RF-16
 - page: src/views/catalogos/pages/catalogos-page.tsx
   requirements:
   - RF-02
   - RF-03
   - RF-04
+  - RF-14
+  - RF-17
+- page: src/views/seguridad/pages/seguridad-page.tsx
+  requirements:
+  - RF-12
+- page: src/views/reasignaciones/pages/reasignaciones-page.tsx
+  requirements:
+  - RF-15
