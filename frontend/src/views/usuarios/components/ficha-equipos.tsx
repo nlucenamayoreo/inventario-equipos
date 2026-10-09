@@ -9,12 +9,12 @@ export function FichaEquipos({
   m,
   u,
   c,
-  admin,
+  puede,
 }: {
   m: Modelo;
   u: Usuario;
   c: FichaController;
-  admin: boolean;
+  puede: { asignar: boolean; reasignar: boolean };
 }) {
   const cargo = m.cargoDe(u);
   const descripcion = (articuloId: number) => {
@@ -47,16 +47,28 @@ export function FichaEquipos({
                 )}
               </div>
             </div>
-            {admin && (
-              <button
-                type="button"
-                className="btn btn-sm btn-txt-peligro"
-                disabled={c.pendiente}
-                onClick={() => c.liberar(a)}
-              >
-                {a.estado === 'pendiente_recuperacion' ? 'Recibir' : 'Liberar'}
-              </button>
-            )}
+            <div className="fila" style={{ gap: 4, flexWrap: 'nowrap' }}>
+              {puede.reasignar && a.estado !== 'prestamo' && (
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={c.pendiente}
+                  onClick={() => c.abrir('reasignar', a)}
+                >
+                  Reasignar
+                </button>
+              )}
+              {puede.asignar && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-txt-peligro"
+                  disabled={c.pendiente}
+                  onClick={() => c.abrir('liberar', a)}
+                >
+                  {a.estado === 'pendiente_recuperacion' ? 'Recibir' : 'Liberar'}
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {!c.mios.length && (

@@ -1,12 +1,16 @@
 import type { Usuario } from '../../../shared/api/types';
+import { CustodioSelect } from '../../../shared/components/custodio-select';
+import type { Modelo } from '../../../shared/domain/modelo';
 import type { FichaController } from '../hooks/use-ficha-controller';
 
 /** Confirmación de desactivar o eliminar, indicando qué pasa con los equipos. */
 export function ConfirmarRetiro({
+  m,
   u,
   c,
   tipo,
 }: {
+  m: Modelo;
   u: Usuario;
   c: FichaController;
   tipo: 'desactivar' | 'eliminar';
@@ -32,6 +36,9 @@ export function ConfirmarRetiro({
         ¿{tipo === 'desactivar' ? 'Desactivar' : 'Eliminar'} a {u.nombre}?
       </span>
       <span style={{ fontSize: 12, color: '#5C1A1D' }}>{detalle}</span>
+      {(tipo === 'eliminar' ? c.mios.length : 0) + c.prestados.length > 0 && (
+        <CustodioSelect m={m} value={c.custodio} onChange={c.setCustodio} />
+      )}
       <div className="fila" style={{ gap: 8 }}>
         <button
           type="button"

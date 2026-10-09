@@ -18,47 +18,45 @@ departamento, qué equipos se tienen y cuáles faltan según el cargo de cada us
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173 — modo demostración, sin backend
-npm test           # reglas de negocio (simulador + cálculos)
-npm run build      # typecheck + build de producción en dist/
+cp .env.example .env.local   # URL de la API y Cognito (salidas del backend desplegado)
+npm run dev                  # http://localhost:5173
+npm test                     # cálculos del resumen y machotes
+npm run build                # typecheck + build de producción en dist/
 ```
 
-### Modos de datos
+La aplicación siempre consume la API real (no hay modo demostración): para desarrollar local apunte
+`VITE_API_BASE_URL` al stage de `dev`.
 
-| `VITE_API_MODE` / `API_MODE` | Comportamiento |
-|---|---|
-| `mock` (por defecto en desarrollo) | Simulador en el navegador con los datos de ejemplo del prototipo. Persiste en `localStorage`; botón «Restablecer datos» y selector de rol para probar `consulta`. |
-| `http` | Consume la API REST de `docs/API.md` (`/api/...`). |
+### Pantallas y permisos
 
-Para desarrollar contra un backend local: `VITE_API_MODE=http npm run dev` (Vite reenvía `/api` a
-`API_PROXY_TARGET`, por defecto `http://localhost:3000`).
+Las pestañas y acciones dependen de los permisos del rol de cada persona (módulo **Seguridad**). Quien ingresa sin
+estar registrado como persona con acceso ve todo en solo lectura (Visitante).
 
-### Pantallas
-
-- **Resumen**: filtros silo → departamento → búsqueda; indicadores (incluye desactivados y pendientes de recuperación);
-  cobertura por silo y por departamento con semáforo; stock por tipo; matriz usuario × tipo.
-- **Usuarios**: alta con vista previa de la dotación del cargo; listado con filtros; ficha con vacaciones
-  (conserva / resguardo / préstamo), edición, desactivar/reactivar, baja lógica, equipos asignados y en préstamo,
-  faltantes y asignación de disponibles permitidos por el cargo.
-- **Activos**: alta de artículos y unidades (valida perfil del cargo), listado con filtros, liberar/recibir,
-  cambio de estado (disponible / en reparación / de baja) e historial de movimientos.
-- **Catálogos**: silos, departamentos, tipos, perfiles de dotación por cargo (nivel y artículo restringido) y artículos.
-
-El rol `consulta` ve todo en solo lectura. Sin sesión (API responde `401`) se muestra «Ingresar con Google».
+- **Resumen**: filtros silo → departamento → búsqueda; indicadores, cobertura con semáforo, stock y matriz usuario × tipo.
+- **Usuarios**: alta, ficha con vacaciones (conserva / resguardo / préstamo), edición, desactivar/reactivar, baja lógica,
+  equipos, faltantes, asignación de disponibles (respeta cargo y máximo por tipo) y solicitud de reasignación.
+- **Activos**: alta (artículo por modelo y características), listado con responsable del resguardo, liberar/recibir y
+  cambio de estado indicando quién queda a cargo, solicitud de reasignación e historial.
+- **Reasignaciones**: solicitudes pendientes y su aprobación o rechazo por el gerente de sistemas.
+- **Catálogos**: silos, departamentos, tipos (máximo por persona), marcas, modelos, características por tipo, artículos
+  y perfiles de dotación por cargo.
+- **Cargas masivas**: machotes Excel con listas desplegables para usuarios y activos; vista previa con errores por fila
+  y aplicación todo o nada.
+- **Seguridad**: roles con sus permisos e invitación de personas con acceso (Cognito envía la contraseña temporal).
 
 ### Contenedor
 
 ```bash
 cd frontend
 docker build -t inventario-ti-frontend .
-docker run -p 8080:8080 -e API_UPSTREAM=http://api:3000 inventario-ti-frontend
+docker run -p 8080:8080 -e API_BASE_URL=https://<api>/dev -e COGNITO_USER_POOL_ID=... \
+  -e COGNITO_CLIENT_ID=... inventario-ti-frontend
 ```
 
 | Variable | Uso |
 |---|---|
-| `API_MODE` | `http` (defecto) o `mock` para una demo sin backend. |
+| `API_BASE_URL` | URL de la API (o `/api` con `API_UPSTREAM`). |
 | `API_UPSTREAM` | Si se define, nginx reenvía `/api/` a ese destino (mismo origen, sin CORS). Vacío = sin proxy. |
-| `API_URL` | Base de la API cuando está en otro origen (p. ej. `https://api.inventario.example`). |
-| `LOGIN_URL` | URL de inicio de sesión (por defecto `<API_URL>/api/auth/google`). |
+| `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` | User Pool y cliente de Cognito. |
 
 La configuración se escribe en `/config.js` al arrancar, así la misma imagen sirve para sandbox, QA y PRD.

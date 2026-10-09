@@ -7,9 +7,11 @@ import {
   PillEstadoUsuario,
 } from '../../../shared/components/ui';
 import type { Modelo } from '../../../shared/domain/modelo';
-import { useEsAdmin } from '../../../shared/state/datos';
+import { usePermisos } from '../../../shared/state/datos';
+import { SolicitarReasignacion } from '../../reasignaciones/components/solicitar-reasignacion';
 import { useFichaController } from '../hooks/use-ficha-controller';
 import { AsignarDisponibles } from './asignar-disponibles';
+import { ConfirmarLiberar } from './confirmar-liberar';
 import { ConfirmarRetiro } from './confirmar-retiro';
 import { EditarUsuario } from './editar-usuario';
 import { FichaEquipos } from './ficha-equipos';
@@ -24,7 +26,9 @@ export function FichaUsuario({
   u: Usuario;
   onEliminado: () => void;
 }) {
-  const admin = useEsAdmin();
+  const puede = usePermisos();
+  const admin = puede('usuarios.gestionar');
+  const asignar = puede('activos.asignar');
   const c = useFichaController(m, u, onEliminado);
   const depto = m.deptoDe(u);
   const silo = depto ? m.idx.silo.get(depto.siloId) : undefined;
@@ -134,11 +138,25 @@ export function FichaUsuario({
       {c.panel === 'editar' && <EditarUsuario m={m} u={u} c={c} />}
       {c.panel === 'vacaciones' && <FormVacaciones m={m} u={u} c={c} />}
       {(c.panel === 'desactivar' || c.panel === 'eliminar') && (
-        <ConfirmarRetiro u={u} c={c} tipo={c.panel} />
+        <ConfirmarRetiro m={m} u={u} c={c} tipo={c.panel} />
+      )}
+      {c.panel === 'liberar' && c.activoSel && <ConfirmarLiberar m={m} a={c.activoSel} c={c} />}
+      {c.panel === 'reasignar' && c.activoSel && (
+        <div className="panel">
+          <span style={{ fontWeight: 700 }}>
+            Solicitar reasignación · S/N <span className="mono">{c.activoSel.serial}</span>
+          </span>
+          <SolicitarReasignacion m={m} activoId={c.activoSel.id} onListo={c.cerrar} />
+        </div>
       )}
 
-      <FichaEquipos m={m} u={u} c={c} admin={admin} />
-      {admin && c.vigente && <AsignarDisponibles m={m} u={u} c={c} />}
+      <FichaEquipos
+        m={m}
+        u={u}
+        c={c}
+        puede={{ asignar, reasignar: puede('reasignaciones.solicitar') }}
+      />
+      {asignar && c.vigente && <AsignarDisponibles m={m} u={u} c={c} />}
     </div>
   );
 }

@@ -4,12 +4,13 @@ import type { EdicionUsuario, Id, NuevaVacacion, NuevoUsuario } from '../../../s
 export const usuariosApi = {
   crear: (datos: NuevoUsuario) => backend.crearUsuario(datos),
   editar: (id: Id, datos: EdicionUsuario) => backend.editarUsuario(id, datos),
-  eliminar: (id: Id) => backend.eliminarUsuario(id),
+  eliminar: (id: Id, custodioId: Id | null) => backend.eliminarUsuario(id, custodioId),
   registrarVacaciones: (id: Id, datos: NuevaVacacion) => backend.registrarVacaciones(id, datos),
   finalizarVacaciones: (id: Id) => backend.finalizarVacaciones(id),
-  desactivar: (id: Id) => backend.desactivarUsuario(id),
+  desactivar: (id: Id, custodioId: Id | null) => backend.desactivarUsuario(id, custodioId),
   reactivar: (id: Id) => backend.reactivarUsuario(id),
   /** Asignación desde la ficha: el backend valida el perfil del cargo. */
   asignarEquipo: (activoId: Id, usuarioId: Id) => backend.asignarActivo(activoId, usuarioId),
-  liberarEquipo: (activoId: Id) => backend.liberarActivo(activoId),
+  liberarEquipo: (activoId: Id, custodioId: Id | null) =>
+    backend.liberarActivo(activoId, custodioId),
 };

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { ApiError } from '../api/api-error';
 import { backend } from '../api/backend';
+import type { Permiso } from '../api/types';
 
 /** Prefijo de las consultas del inventario: toda mutación lo invalida. */
 export const K = 'inv';
@@ -23,9 +24,19 @@ export function useSyncGoogle() {
   });
 }
 
-/** true si el operador puede modificar (rol admin_ti). */
-export function useEsAdmin(): boolean {
-  return useSesion().data?.rol === 'admin_ti';
+/** true si el rol del operador incluye el permiso (el superadministrador los tiene todos). */
+export function usePermiso(permiso: Permiso): boolean {
+  return usePermisos()(permiso);
+}
+
+/** Comprobador de permisos del operador actual, para vistas que consultan varios. */
+export function usePermisos(): (permiso: Permiso) => boolean {
+  const sesion = useSesion().data;
+  return useCallback(
+    (permiso: Permiso) =>
+      !!sesion?.activo && (sesion.superadmin || sesion.permisos.includes(permiso)),
+    [sesion],
+  );
 }
 
 export interface Mensaje {

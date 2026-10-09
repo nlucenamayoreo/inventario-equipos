@@ -5,7 +5,6 @@ set -eu
 esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 cat > /usr/share/nginx/html/config.js <<JS
 window.__APP_CONFIG__ = {
-  apiMode: "$(esc "${API_MODE:-http}")",
   apiBaseUrl: "$(esc "${API_BASE_URL:-/api}")",
   cognitoUserPoolId: "$(esc "${COGNITO_USER_POOL_ID:-}")",
   cognitoClientId: "$(esc "${COGNITO_CLIENT_ID:-}")"

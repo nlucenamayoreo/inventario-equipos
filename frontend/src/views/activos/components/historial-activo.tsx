@@ -56,6 +56,7 @@ export function HistorialActivo({
                 <th>Motivo</th>
                 <th>Estado</th>
                 <th>Titular</th>
+                <th>Resguardo</th>
                 <th>Realizado por</th>
               </tr>
             </thead>
@@ -80,12 +81,17 @@ export function HistorialActivo({
                       ? `${mv.usuarioAnteriorNombre ?? '—'} → ${mv.usuarioNuevoNombre ?? '—'}`
                       : (mv.usuarioNuevoNombre ?? '—')}
                   </td>
+                  <td>
+                    {mv.custodioAnterior !== mv.custodioNuevo
+                      ? `${mv.custodioAnteriorNombre ?? '—'} → ${mv.custodioNuevoNombre ?? '—'}`
+                      : (mv.custodioNuevoNombre ?? '—')}
+                  </td>
                   <td style={{ fontSize: 12 }}>{mv.realizadoPor}</td>
                 </tr>
               ))}
               {!q.data.length && (
                 <tr>
-                  <td colSpan={5} className="vacio">
+                  <td colSpan={6} className="vacio">
                     Sin movimientos registrados.
                   </td>
                 </tr>

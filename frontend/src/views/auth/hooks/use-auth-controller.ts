@@ -1,17 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
-import { esModoDemo } from '../../../shared/api/backend';
 import { authApi } from '../api/auth-api';
 
 export type EstadoAuth = 'cargando' | 'anonimo' | 'autenticado';
 
-/** ¿Hay sesión de Cognito? En modo demostración siempre hay (no hay login). */
+/** ¿Hay sesión de Cognito? */
 export function useAuthController() {
   const qc = useQueryClient();
-  const [estado, setEstado] = useState<EstadoAuth>(esModoDemo ? 'autenticado' : 'cargando');
+  const [estado, setEstado] = useState<EstadoAuth>('cargando');
 
   useEffect(() => {
-    if (esModoDemo) return;
     const abort = new AbortController();
     const revisar = () =>
       authApi.currentUser().then((u) => {
@@ -34,5 +32,5 @@ export function useAuthController() {
     setEstado('anonimo');
   }, [qc]);
 
-  return { estado, salir: esModoDemo ? null : salir };
+  return { estado, salir };
 }

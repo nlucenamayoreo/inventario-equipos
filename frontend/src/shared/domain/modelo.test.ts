@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crearSeed } from '../api/mock/seed';
+import { crearSeed } from './datos-ejemplo';
 import type { Usuario } from '../api/types';
 import { construirModelo } from './modelo';
 import { tonoCobertura } from './reglas';

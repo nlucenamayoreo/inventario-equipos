@@ -12,7 +12,7 @@ departamento, qué equipos se tienen y cuáles faltan según el cargo de cada us
 | `db/schema.sql` | Modelo de datos PostgreSQL (tablas, restricciones, vistas de cobertura). |
 | `db/seed_catalogos.sql` | Catálogos base (tipos de equipo). Sin datos de personas. |
 | `docs/API.md` | Contrato REST que consume el frontend (endpoints, reglas, errores, motivos de movimiento). |
-| `frontend/` | Frontend React + TypeScript terminado. `src/api/mock/mockApi.ts` es la especificación ejecutable del backend. |
+| `frontend/` | Frontend React + TypeScript (Cognito). Consume la API real; las reglas viven en `backend/src` (casos de uso y pruebas). |
 | `prototipo/` | Maqueta funcional aprobada (formato Design Component `.dc.html`). Úsala como referencia de pantallas, textos y comportamiento; **no** como código a reutilizar. |
 
 El prototipo `prototipo/Main.dc.html` contiene toda la lógica en la clase `Component` (métodos `createUser`,

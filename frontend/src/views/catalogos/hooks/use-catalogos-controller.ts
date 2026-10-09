@@ -57,6 +57,20 @@ export function useCatalogosController(m: Modelo) {
     if (c) setCargoSel(c.id);
   };
 
+  const guardarMaxTipo = (tipoId: number, max: number) => {
+    if (!Number.isInteger(max) || max < 1 || max > 20)
+      return Promise.resolve(
+        acc.setMsg({
+          texto: 'El máximo por persona debe ser un entero entre 1 y 20.',
+          error: true,
+        }),
+      );
+    return acc.ejecutar(
+      () => catalogosApi.editarTipoEquipo(tipoId, { maxPorUsuario: max }),
+      `${m.nombreTipo(tipoId)}: máximo ${max} por persona.`,
+    );
+  };
+
   const pc = (cargoSel != null && m.idx.cargo.get(cargoSel)) || m.cargos[0];
   const usuariosCon = (pred: (u: Modelo['usuarios'][number]) => boolean) =>
     m.usuarios.filter(pred).length;
@@ -78,6 +92,7 @@ export function useCatalogosController(m: Modelo) {
     addDepto,
     addTipo,
     addCargo,
+    guardarMaxTipo,
     pc,
     setCargoSel,
     usuariosCon,

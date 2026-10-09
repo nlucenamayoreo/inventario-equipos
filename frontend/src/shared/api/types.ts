@@ -14,7 +14,18 @@ export type EstadoActivo =
   | 'en_reparacion'
   | 'de_baja';
 export type AccionVacacion = 'conserva' | 'resguardo' | 'prestamo';
-export type Rol = 'admin_ti' | 'consulta';
+export type EstadoReasignacion = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
+
+/** Códigos de permiso (tbl_permiso). El superadministrador los tiene todos. */
+export type Permiso =
+  | 'catalogos.gestionar'
+  | 'articulos.gestionar'
+  | 'usuarios.gestionar'
+  | 'activos.registrar'
+  | 'activos.asignar'
+  | 'reasignaciones.solicitar'
+  | 'reasignaciones.aprobar'
+  | 'seguridad.gestionar';
 
 export interface Silo {
   id: Id;
@@ -33,6 +44,42 @@ export interface TipoEquipo {
   id: Id;
   nombre: string;
   activo: boolean;
+  /** Máximo de equipos de este tipo por persona (Laptop 2: la propia y una de resguardo o préstamo). */
+  maxPorUsuario: number;
+}
+
+export interface Marca {
+  id: Id;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface Modelo {
+  id: Id;
+  marcaId: Id;
+  tipoId: Id;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface ValorCaracteristica {
+  id: Id;
+  valor: string;
+  activo: boolean;
+}
+
+/** Característica seleccionable de un tipo de equipo (RAM, Disco…) con sus valores. */
+export interface Caracteristica {
+  id: Id;
+  tipoId: Id;
+  nombre: string;
+  activo: boolean;
+  valores: ValorCaracteristica[];
+}
+
+export interface CaracteristicaElegida {
+  caracteristicaId: Id;
+  valorId: Id;
 }
 
 export interface Articulo {
@@ -41,9 +88,11 @@ export interface Articulo {
   tipoId: Id;
   marca: string;
   modelo: string;
+  modeloId: Id | null;
   especificaciones: string | null;
   vidaUtilMeses: number | null;
   activo: boolean;
+  caracteristicas: CaracteristicaElegida[];
 }
 
 /** Una fila por tipo configurado. Tipo ausente = no_permitido. */
@@ -94,6 +143,8 @@ export interface Activo {
   usuarioId: Id | null; // titular
   prestadoA: Id | null; // suplente
   fechaAsignacion: string | null; // YYYY-MM-DD
+  /** Persona con acceso responsable del resguardo (disponible, en resguardo, en reparación). */
+  custodioId: Id | null;
 }
 
 export interface Movimiento {
@@ -106,6 +157,10 @@ export interface Movimiento {
   /** Nombres resueltos por el servidor (incluye usuarios eliminados). */
   usuarioAnteriorNombre: string | null;
   usuarioNuevoNombre: string | null;
+  custodioAnterior: Id | null;
+  custodioNuevo: Id | null;
+  custodioAnteriorNombre: string | null;
+  custodioNuevoNombre: string | null;
   motivo: string | null;
   realizadoPor: string;
   realizadoEn: string; // ISO
@@ -127,7 +182,67 @@ export interface SyncGoogleEstado {
 export interface Sesion {
   correo: string;
   nombre: string;
-  rol: Rol;
+  /** Nombre del rol ("Visitante" si la cuenta no es una persona con acceso). */
+  rol: string;
+  operadorId: Id | null;
+  superadmin: boolean;
+  activo: boolean;
+  permisos: Permiso[];
+}
+
+export interface PermisoInfo {
+  codigo: Permiso;
+  modulo: string;
+  descripcion: string;
+}
+
+export interface Rol {
+  id: Id;
+  nombre: string;
+  descripcion: string | null;
+  esSistema: boolean;
+  activo: boolean;
+  permisos: Permiso[];
+}
+
+/** Persona con acceso a la aplicación (puede ser responsable de resguardo). */
+export interface Operador {
+  id: Id;
+  correo: string;
+  nombre: string;
+  rolId: Id;
+  rolNombre: string | null;
+  activo: boolean;
+  creadoEn: string | null;
+}
+
+export interface Reasignacion {
+  id: Id;
+  activoId: Id;
+  usuarioOrigen: Id;
+  usuarioDestino: Id;
+  motivo: string;
+  estado: EstadoReasignacion;
+  solicitadoPor: Id;
+  solicitadoPorNombre: string | null;
+  solicitadoEn: string;
+  resueltoPor: Id | null;
+  resueltoPorNombre: string | null;
+  resueltoEn: string | null;
+  comentario: string | null;
+}
+
+export interface FilaImportacion {
+  fila: number;
+  ok: boolean;
+  detalle: string;
+}
+
+export interface ResultadoImportacion {
+  filas: FilaImportacion[];
+  errores: number;
+  validas: number;
+  aplicado: boolean;
 }
 
 // ---------- Cuerpos de petición ----------
@@ -148,14 +263,15 @@ export interface NuevaVacacion {
   accion: AccionVacacion;
   suplenteId: Id | null;
   nota: string | null;
+  /** Con acción "resguardo": quién queda a cargo de los equipos. */
+  custodioId?: Id | null;
 }
 
 export interface NuevoArticulo {
-  tipoId: Id;
-  marca: string;
-  modelo: string;
+  modeloId: Id;
   especificaciones: string | null;
   vidaUtilMeses: number | null;
+  caracteristicas: CaracteristicaElegida[];
 }
 
 export interface NuevoActivo {
@@ -163,7 +279,40 @@ export interface NuevoActivo {
   serial: string;
   estado: 'disponible' | 'en_reparacion' | 'de_baja';
   usuarioId: Id | null;
+  /** Responsable del resguardo si queda sin titular (por defecto, quien lo registra). */
+  custodioId: Id | null;
 }
+
+export interface NuevoRol {
+  nombre: string;
+  descripcion: string | null;
+  permisos: Permiso[];
+}
+
+export interface EdicionRol extends Partial<NuevoRol> {
+  activo?: boolean;
+}
+
+export interface NuevoOperador {
+  correo: string;
+  nombre: string;
+  rolId: Id;
+}
+
+export interface EdicionOperador {
+  nombre?: string;
+  rolId?: Id;
+  activo?: boolean;
+}
+
+export interface NuevaReasignacion {
+  activoId: Id;
+  usuarioDestino: Id;
+  motivo: string;
+}
+
+/** Fila de un machote (claves = encabezados normalizados de la hoja). */
+export type FilaMachote = Record<string, string | number | null>;
 
 export interface ResultadoBaja {
   liberados: number;

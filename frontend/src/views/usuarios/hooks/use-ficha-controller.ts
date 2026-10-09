@@ -1,10 +1,17 @@
 import { useState } from 'react';
-import type { AccionVacacion, Activo, Usuario } from '../../../shared/api/types';
+import type { AccionVacacion, Activo, Id, Usuario } from '../../../shared/api/types';
 import type { Modelo } from '../../../shared/domain/modelo';
 import { useAccion } from '../../../shared/state/datos';
 import { usuariosApi } from '../api/usuarios-api';
 
-export type Panel = null | 'editar' | 'vacaciones' | 'desactivar' | 'eliminar';
+export type Panel =
+  | null
+  | 'editar'
+  | 'vacaciones'
+  | 'desactivar'
+  | 'eliminar'
+  | 'liberar'
+  | 'reasignar';
 
 export interface FormVacaciones {
   desde: string;
@@ -27,10 +34,16 @@ export function useFichaController(m: Modelo, u: Usuario, onEliminado: () => voi
   const accion = useAccion();
   const { ejecutar, setMsg } = accion;
   const [panel, setPanel] = useState<Panel>(null);
-  const abrir = (p: Panel) => {
-    setPanel(panel === p ? null : p);
+  /** Equipo sobre el que se abrió «liberar» o «reasignar». */
+  const [activoSel, setActivoSel] = useState<Activo | null>(null);
+  /** Responsable del resguardo de los equipos que dejan de estar en manos del colaborador. */
+  const [custodio, setCustodio] = useState<Id | null>(null);
+  const abrir = (p: Panel, a: Activo | null = null) => {
+    setPanel(panel === p && activoSel?.id === a?.id ? null : p);
+    setActivoSel(a);
     setMsg(null);
   };
+  const aCargoDe = () => (custodio != null ? m.nombreOperador(custodio) : 'usted');
   const cerrarSi = (ok: unknown) => {
     if (ok) setPanel(null);
   };
@@ -50,13 +63,18 @@ export function useFichaController(m: Modelo, u: Usuario, onEliminado: () => voi
     ...datos,
     panel,
     abrir,
+    activoSel,
+    custodio,
+    setCustodio,
     cerrar: () => setPanel(null),
-    liberar: (a: Activo) =>
-      ejecutar(
-        () => usuariosApi.liberarEquipo(a.id),
-        a.estado === 'pendiente_recuperacion'
-          ? `Equipo ${a.serial} recuperado; quedó disponible.`
-          : `Equipo ${a.serial} liberado.`,
+    liberar: async (a: Activo) =>
+      cerrarSi(
+        await ejecutar(
+          () => usuariosApi.liberarEquipo(a.id, custodio),
+          `Equipo ${a.serial} ${
+            a.estado === 'pendiente_recuperacion' ? 'recibido' : 'liberado'
+          }; quedó disponible a cargo de ${aCargoDe()}.`,
+        ),
       ),
     asignar: (a: Activo) =>
       ejecutar(() => usuariosApi.asignarEquipo(a.id, u.id), `Equipo ${a.serial} asignado.`),
@@ -73,15 +91,15 @@ export function useFichaController(m: Modelo, u: Usuario, onEliminado: () => voi
     desactivar: async () =>
       cerrarSi(
         await ejecutar(
-          () => usuariosApi.desactivar(u.id),
+          () => usuariosApi.desactivar(u.id, custodio),
           'Usuario desactivado; sus equipos quedaron pendientes de recuperación.',
         ),
       ),
     eliminar: async () => {
       if (
         await ejecutar(
-          () => usuariosApi.eliminar(u.id),
-          `Usuario ${u.nombre} eliminado; sus equipos quedaron disponibles.`,
+          () => usuariosApi.eliminar(u.id, custodio),
+          `Usuario ${u.nombre} eliminado; sus equipos quedaron disponibles a cargo de ${aCargoDe()}.`,
         )
       )
         onEliminado();
@@ -99,6 +117,7 @@ export function useFichaController(m: Modelo, u: Usuario, onEliminado: () => voi
         accion: f.accion,
         nota: f.nota || null,
         suplenteId: f.accion === 'prestamo' ? Number(f.suplenteId) : null,
+        custodioId: f.accion === 'resguardo' ? custodio : null,
       };
       cerrarSi(
         await ejecutar(

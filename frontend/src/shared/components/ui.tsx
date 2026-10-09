@@ -45,6 +45,7 @@ export const MOTIVO: Record<string, string> = {
   desactivacion: 'Desactivación del usuario',
   sync_google: 'Sincronización Google',
   cambio_estado: 'Cambio de estado',
+  reasignacion: 'Reasignación aprobada',
 };
 
 export function Pill({

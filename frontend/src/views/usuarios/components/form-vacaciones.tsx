@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AccionVacacion, Usuario } from '../../../shared/api/types';
+import { CustodioSelect } from '../../../shared/components/custodio-select';
 import { ACCION_VACACION, Campo } from '../../../shared/components/ui';
 import type { Modelo } from '../../../shared/domain/modelo';
 import type { FichaController, FormVacaciones as Form } from '../hooks/use-ficha-controller';
@@ -48,6 +49,9 @@ export function FormVacaciones({ m, u, c }: { m: Modelo; u: Usuario; c: FichaCon
             ))}
           </select>
         </Campo>
+      )}
+      {f.accion === 'resguardo' && (
+        <CustodioSelect m={m} value={c.custodio} onChange={c.setCustodio} />
       )}
       <Campo label="Observación">
         <input className="in" value={f.nota} onChange={set('nota')} placeholder="Opcional" />

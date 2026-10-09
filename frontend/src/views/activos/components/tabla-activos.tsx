@@ -13,9 +13,24 @@ import {
 import type { Modelo } from '../../../shared/domain/modelo';
 import type { ActivosController } from '../hooks/use-activos-controller';
 
+const REASIGNABLES: EstadoActivo[] = ['asignado', 'en_resguardo', 'pendiente_recuperacion'];
+
+export interface PermisosActivos {
+  asignar: boolean;
+  reasignar: boolean;
+}
+
 const ESTADOS_SIN_TITULAR: EstadoSinTitular[] = ['disponible', 'en_reparacion', 'de_baja'];
 
-export function TablaActivos({ m, c, admin }: { m: Modelo; c: ActivosController; admin: boolean }) {
+export function TablaActivos({
+  m,
+  c,
+  puede,
+}: {
+  m: Modelo;
+  c: ActivosController;
+  puede: PermisosActivos;
+}) {
   return (
     <Seccion
       titulo={`Activos (${c.filas.length})`}
@@ -72,6 +87,7 @@ export function TablaActivos({ m, c, admin }: { m: Modelo; c: ActivosController;
             <th>Estado</th>
             <th>Titular</th>
             <th>En uso por</th>
+            <th>Resguardo</th>
             <th>Departamento</th>
             <th>Desde</th>
             <th>
@@ -105,21 +121,32 @@ export function TablaActivos({ m, c, admin }: { m: Modelo; c: ActivosController;
                   {titular ? <Link to={`/usuarios/${titular.id}`}>{titular.nombre}</Link> : '—'}
                 </td>
                 <td>{c.enUso(a)}</td>
+                <td>{a.custodioId != null ? m.nombreOperador(a.custodioId) : '—'}</td>
                 <td>{titular ? (m.deptoDe(titular)?.nombre ?? '—') : '—'}</td>
                 <td>{fmtFecha(a.fechaAsignacion)}</td>
                 <td>
                   <div className="fila" style={{ gap: 6, flexWrap: 'nowrap' }}>
-                    {admin && a.usuarioId != null && (
+                    {puede.reasignar && a.usuarioId != null && REASIGNABLES.includes(a.estado) && (
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        disabled={c.accion.pendiente}
+                        onClick={() => c.setReasignar(a)}
+                      >
+                        Reasignar
+                      </button>
+                    )}
+                    {puede.asignar && a.usuarioId != null && (
                       <button
                         type="button"
                         className="btn btn-sm btn-txt-peligro"
                         disabled={c.accion.pendiente}
-                        onClick={() => c.liberar(a)}
+                        onClick={() => c.setEntrega({ activo: a })}
                       >
                         {a.estado === 'pendiente_recuperacion' ? 'Recibir' : 'Liberar'}
                       </button>
                     )}
-                    {admin && a.usuarioId == null && (
+                    {puede.asignar && a.usuarioId == null && (
                       <select
                         className="in"
                         aria-label={`Cambiar estado de ${a.serial}`}
@@ -149,7 +176,7 @@ export function TablaActivos({ m, c, admin }: { m: Modelo; c: ActivosController;
           })}
           {!c.filas.length && (
             <tr>
-              <td colSpan={10} className="vacio">
+              <td colSpan={11} className="vacio">
                 No hay activos que coincidan con el filtro.
               </td>
             </tr>

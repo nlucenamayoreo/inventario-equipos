@@ -1,6 +1,10 @@
-// Datos de ejemplo del prototipo (prototipo/Main.dc.html, método seed). Solo ilustrativos.
+// Datos de ejemplo del prototipo (prototipo/Main.dc.html, método seed) para las pruebas del modelo.
 import type {
+  Caracteristica,
+  Marca,
+  Modelo,
   Movimiento,
+  Operador,
   Activo,
   Articulo,
   Cargo,
@@ -12,9 +16,9 @@ import type {
   TipoEquipo,
   Usuario,
   Vacacion,
-} from '../types';
+} from '../api/types';
 
-export interface MockDb {
+export interface DatosEjemplo {
   silos: Silo[];
   departamentos: Departamento[];
   tipos: TipoEquipo[];
@@ -24,13 +28,17 @@ export interface MockDb {
   vacaciones: Vacacion[];
   activos: Activo[];
   movimientos: Omit<Movimiento, 'usuarioAnteriorNombre' | 'usuarioNuevoNombre'>[];
+  marcas: Marca[];
+  modelos: Modelo[];
+  caracteristicas: Caracteristica[];
+  operadores: Operador[];
   sync: SyncGoogleEstado;
   seq: Record<string, number>;
 }
 
 const SISTEMA = 'carga_inicial@sistema';
 
-export function crearSeed(): MockDb {
+export function crearSeed(): DatosEjemplo {
   const silos: Silo[] = ['Comercial', 'Operaciones', 'Corporativo'].map((nombre, i) => ({
     id: i + 1,
     nombre,
@@ -55,7 +63,7 @@ export function crearSeed(): MockDb {
     'Mouse',
     'Headset',
     'Base laptop',
-  ].map((nombre, i) => ({ id: i + 1, nombre, activo: true }));
+  ].map((nombre, i) => ({ id: i + 1, nombre, activo: true, maxPorUsuario: i === 0 ? 2 : 1 }));
 
   const arts: [number, string, string, string | null, number | null, string][] = [
     [1, 'Dell', 'Latitude 5440', 'i5, 16 GB, 512 GB SSD', 48, 'LT'],
@@ -76,6 +84,8 @@ export function crearSeed(): MockDb {
       especificaciones,
       vidaUtilMeses,
       activo: true,
+      modeloId: null,
+      caracteristicas: [],
     }),
   );
   const prefijo = new Map(articulos.map((a, i) => [a.id, arts[i][5]]));
@@ -128,7 +138,7 @@ export function crearSeed(): MockDb {
     ['Analista de nómina', 8],
     ['Ejecutivo de ventas', 1],
   ];
-  const usuarios: MockDb['usuarios'] = personas.map(([cargo, departamentoId], i) => {
+  const usuarios: DatosEjemplo['usuarios'] = personas.map(([cargo, departamentoId], i) => {
     const n = String(i + 1).padStart(3, '0');
     return {
       id: i + 1,
@@ -145,7 +155,7 @@ export function crearSeed(): MockDb {
   });
 
   const activos: Activo[] = [];
-  const movimientos: MockDb['movimientos'] = [];
+  const movimientos: DatosEjemplo['movimientos'] = [];
   let k = 0;
   const ahora = new Date().toISOString();
   const mk = (articuloId: number, usuarioId: number | null, estado: EstadoActivo) => {
@@ -159,6 +169,7 @@ export function crearSeed(): MockDb {
       usuarioId,
       prestadoA: null,
       fechaAsignacion: fecha,
+      custodioId: usuarioId ? null : 1,
     });
     movimientos.push({
       id: movimientos.length + 1,
@@ -167,6 +178,10 @@ export function crearSeed(): MockDb {
       estadoNuevo: estado,
       usuarioAnterior: null,
       usuarioNuevo: usuarioId,
+      custodioAnterior: null,
+      custodioNuevo: usuarioId ? null : 1,
+      custodioAnteriorNombre: null,
+      custodioNuevoNombre: null,
       motivo: 'alta',
       realizadoPor: SISTEMA,
       realizadoEn: fecha ? `${fecha}T12:00:00.000Z` : ahora,
@@ -242,6 +257,20 @@ export function crearSeed(): MockDb {
     vacaciones,
     activos,
     movimientos,
+    marcas: [],
+    modelos: [],
+    caracteristicas: [],
+    operadores: [
+      {
+        id: 1,
+        correo: 'admin.ti@mayoreo.biz',
+        nombre: 'Administrador TI',
+        rolId: 1,
+        rolNombre: 'Superadministrador',
+        activo: true,
+        creadoEn: null,
+      },
+    ],
     sync: {
       ultimaExitosa: hace(18),
       ultimaCorrida: {

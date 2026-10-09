@@ -1,9 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { esModoDemo, mockApi } from '../api/backend';
-import type { Rol } from '../api/types';
-import { useSesion, useSyncGoogle } from '../state/datos';
+import type { Permiso } from '../api/types';
+import { usePermisos, useSesion, useSyncGoogle } from '../state/datos';
 import { fmtFechaHora, Pill } from './ui';
 
 export function Logo() {
@@ -26,11 +24,16 @@ export function Logo() {
   );
 }
 
-const TABS: [string, string][] = [
-  ['/', 'Resumen'],
-  ['/usuarios', 'Usuarios'],
-  ['/activos', 'Activos'],
-  ['/catalogos', 'Catálogos'],
+type Tab = [ruta: string, etiqueta: string, visible: (puede: (p: Permiso) => boolean) => boolean];
+
+const TABS: Tab[] = [
+  ['/', 'Resumen', () => true],
+  ['/usuarios', 'Usuarios', () => true],
+  ['/activos', 'Activos', () => true],
+  ['/reasignaciones', 'Reasignaciones', () => true],
+  ['/catalogos', 'Catálogos', () => true],
+  ['/cargas', 'Cargas masivas', (p) => p('usuarios.gestionar') || p('activos.registrar')],
+  ['/seguridad', 'Seguridad', (p) => p('seguridad.gestionar')],
 ];
 
 export function Layout({
@@ -42,22 +45,7 @@ export function Layout({
 }) {
   const sesion = useSesion().data;
   const sync = useSyncGoogle().data;
-  const qc = useQueryClient();
-
-  const cambiarRol = (r: Rol) => {
-    mockApi?.cambiarRol(r);
-    qc.invalidateQueries();
-  };
-  const restablecer = () => {
-    if (
-      !window.confirm(
-        '¿Restablecer los datos de ejemplo? Se perderán los cambios hechos en esta demostración.',
-      )
-    )
-      return;
-    mockApi?.restablecer();
-    qc.invalidateQueries();
-  };
+  const puede = usePermisos();
 
   return (
     <>
@@ -72,7 +60,6 @@ export function Layout({
               </div>
             </div>
             <div className="app-meta">
-              {esModoDemo && <Pill tono="mid">Modo demostración · datos de ejemplo</Pill>}
               <span
                 title={
                   sync?.ultimaCorrida && !sync.ultimaCorrida.exitoso
@@ -97,27 +84,10 @@ export function Layout({
               {sesion && (
                 <span>
                   {sesion.nombre} ·{' '}
-                  <Pill tono={sesion.rol === 'admin_ti' ? 'blu' : 'neu'} small>
-                    {sesion.rol === 'admin_ti' ? 'Administrador TI' : 'Consulta'}
+                  <Pill tono={sesion.superadmin ? 'blu' : 'neu'} small>
+                    {sesion.activo ? sesion.rol : 'Acceso desactivado'}
                   </Pill>
                 </span>
-              )}
-              {esModoDemo && sesion && (
-                <>
-                  <select
-                    className="in"
-                    aria-label="Rol de demostración"
-                    style={{ width: 160, height: 32 }}
-                    value={sesion.rol}
-                    onChange={(e) => cambiarRol(e.target.value as Rol)}
-                  >
-                    <option value="admin_ti">Ver como admin TI</option>
-                    <option value="consulta">Ver como consulta</option>
-                  </select>
-                  <button type="button" className="btn btn-sm" onClick={restablecer}>
-                    Restablecer datos
-                  </button>
-                </>
               )}
               {onSalir && (
                 <button type="button" className="btn btn-sm" onClick={onSalir}>
@@ -127,7 +97,7 @@ export function Layout({
             </div>
           </div>
           <nav className="nav" aria-label="Secciones">
-            {TABS.map(([to, label]) => (
+            {TABS.filter(([, , visible]) => visible(puede)).map(([to, label]) => (
               <NavLink key={to} to={to} end={to === '/'}>
                 {label}
               </NavLink>

@@ -11,6 +11,7 @@ export function AsignarDisponibles({ m, u, c }: { m: Modelo; u: Usuario; c: Fich
     (a) => a.estado === 'disponible' && (!tipo || String(m.tipoDeActivo(a)) === tipo),
   );
   const ok = todos.filter((a) => m.puedeRecibir(u, a));
+  const llenos = new Set(m.tipos.filter((t) => m.cupo(u, t.id).lleno).map((t) => t.id));
   const ocultos = todos.length - ok.length;
   const filas = ok
     .map((a) => ({ a, falta: c.faltan.includes(m.tipoDeActivo(a)) }))
@@ -49,6 +50,7 @@ export function AsignarDisponibles({ m, u, c }: { m: Modelo; u: Usuario; c: Fich
       <div className="lista-scroll">
         {filas.map(({ a, falta }) => {
           const art = m.idx.articulo.get(a.articuloId);
+          const lleno = llenos.has(m.tipoDeActivo(a));
           return (
             <div key={a.id} className="item">
               <div className="col" style={{ gap: 2 }}>
@@ -61,6 +63,11 @@ export function AsignarDisponibles({ m, u, c }: { m: Modelo; u: Usuario; c: Fich
                       Le falta
                     </Pill>
                   )}
+                  {lleno && (
+                    <Pill tono="mid" small>
+                      Máximo alcanzado
+                    </Pill>
+                  )}
                 </div>
                 <span style={{ fontSize: 11 }} className="tenue mono">
                   S/N {a.serial}
@@ -70,7 +77,12 @@ export function AsignarDisponibles({ m, u, c }: { m: Modelo; u: Usuario; c: Fich
                 type="button"
                 className="btn btn-primario btn-sm"
                 style={{ height: 34, padding: '0 14px' }}
-                disabled={c.pendiente}
+                disabled={c.pendiente || lleno}
+                title={
+                  lleno
+                    ? `Ya tiene el máximo de equipos de tipo ${m.nombreTipo(m.tipoDeActivo(a))} por persona.`
+                    : undefined
+                }
                 onClick={() => c.asignar(a)}
               >
                 Asignar

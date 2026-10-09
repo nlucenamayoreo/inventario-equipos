@@ -1,23 +1,28 @@
 import type { EstadoSinTitular } from '../../../shared/api/client';
+import { CustodioSelect } from '../../../shared/components/custodio-select';
+import { FormArticulo } from '../../../shared/components/form-articulo';
 import { Aviso, Campo, ESTADO_ACTIVO, Seccion } from '../../../shared/components/ui';
 import type { Modelo } from '../../../shared/domain/modelo';
 import { esVigente } from '../../../shared/domain/reglas';
+import { usePermiso } from '../../../shared/state/datos';
 import { useRegistroController } from '../hooks/use-registro-controller';
 
 const ESTADOS_SIN_TITULAR: EstadoSinTitular[] = ['disponible', 'en_reparacion', 'de_baja'];
 
 export function RegistrarActivo({ m }: { m: Modelo }) {
+  const puedeArticulos = usePermiso('articulos.gestionar');
   const {
     verArt,
     toggleArt,
-    art,
-    setArt,
     f,
     setF,
     accArt,
     acc,
     destino,
     noPermitido,
+    cupo,
+    sinCupo,
+    pideCustodio,
     crearArticulo,
     guardar,
   } = useRegistroController(m);
@@ -26,9 +31,11 @@ export function RegistrarActivo({ m }: { m: Modelo }) {
       titulo="Registrar activo"
       caja
       extra={
-        <button type="button" className="btn btn-borde-acento" onClick={toggleArt}>
-          {verArt ? 'Cerrar nuevo artículo' : '+ Nuevo artículo'}
-        </button>
+        puedeArticulos && (
+          <button type="button" className="btn btn-borde-acento" onClick={toggleArt}>
+            {verArt ? 'Cerrar nuevo artículo' : '+ Nuevo artículo'}
+          </button>
+        )
       }
     >
       {verArt && (
@@ -36,68 +43,12 @@ export function RegistrarActivo({ m }: { m: Modelo }) {
           <div className="col" style={{ gap: 2 }}>
             <span style={{ fontWeight: 700 }}>Nuevo artículo</span>
             <span style={{ fontSize: 12, color: 'var(--texto-2)' }}>
-              Cree el modelo una sola vez; luego registre cada unidad con su serial.
+              Elija el modelo y sus características una sola vez; luego registre cada unidad con su
+              serial.
             </span>
           </div>
-          <div className="grid-form" style={{ gap: 10 }}>
-            <Campo label="Tipo de equipo *">
-              <select
-                className="in"
-                value={art.tipoId}
-                onChange={(e) => setArt({ ...art, tipoId: e.target.value })}
-              >
-                <option value="">Seleccione…</option>
-                {m.tipos.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.nombre}
-                  </option>
-                ))}
-              </select>
-            </Campo>
-            <Campo label="Marca *">
-              <input
-                className="in"
-                value={art.marca}
-                onChange={(e) => setArt({ ...art, marca: e.target.value })}
-              />
-            </Campo>
-            <Campo label="Modelo *">
-              <input
-                className="in"
-                value={art.modelo}
-                onChange={(e) => setArt({ ...art, modelo: e.target.value })}
-              />
-            </Campo>
-            <Campo label="Especificaciones">
-              <input
-                className="in"
-                value={art.especificaciones}
-                onChange={(e) => setArt({ ...art, especificaciones: e.target.value })}
-                placeholder="Ej. i5, 16 GB, 512 GB SSD"
-              />
-            </Campo>
-            <Campo label="Vida útil (meses)">
-              <input
-                className="in"
-                type="number"
-                min={0}
-                step={1}
-                value={art.vida}
-                onChange={(e) => setArt({ ...art, vida: e.target.value })}
-              />
-            </Campo>
-          </div>
-          <div className="fila">
-            <button
-              type="button"
-              className="btn btn-primario"
-              onClick={crearArticulo}
-              disabled={accArt.pendiente}
-            >
-              Crear artículo
-            </button>
-            <Aviso msg={accArt.msg} />
-          </div>
+          <FormArticulo m={m} pendiente={accArt.pendiente} onGuardar={crearArticulo} />
+          <Aviso msg={accArt.msg} />
         </div>
       )}
 
@@ -115,6 +66,7 @@ export function RegistrarActivo({ m }: { m: Modelo }) {
             {m.articulos.map((a) => (
               <option key={a.id} value={a.id}>
                 {m.nombreTipo(a.tipoId)} · {a.marca} {a.modelo} ({a.codigo})
+                {a.caracteristicas.length ? ` · ${m.caracteristicasDe(a)}` : ''}
               </option>
             ))}
           </select>
@@ -156,7 +108,20 @@ export function RegistrarActivo({ m }: { m: Modelo }) {
             ))}
           </select>
         </Campo>
+        {pideCustodio && (
+          <CustodioSelect
+            m={m}
+            value={f.custodioId}
+            onChange={(custodioId) => setF({ ...f, custodioId })}
+          />
+        )}
       </div>
+      {sinCupo && !noPermitido && (
+        <span className="msg msg-err">
+          {destino!.nombre} ya tiene {cupo!.tiene} equipo(s) de este tipo; el máximo por persona es{' '}
+          {cupo!.max}.
+        </span>
+      )}
       {noPermitido && (
         <span className="msg msg-err">
           El cargo de {destino!.nombre} no permite este artículo. Regístrelo sin asignar o ajuste el
@@ -168,7 +133,7 @@ export function RegistrarActivo({ m }: { m: Modelo }) {
           type="button"
           className="btn btn-primario btn-lg"
           onClick={guardar}
-          disabled={acc.pendiente || noPermitido}
+          disabled={acc.pendiente || noPermitido || sinCupo}
         >
           Guardar activo
         </button>
