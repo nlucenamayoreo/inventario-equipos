@@ -1,17 +1,17 @@
 # PROJECT REPORT — Inventario de Equipos TI
 
 **Estado: PROJECT COMPLETE**  
-Generado: 2026-10-09T13:29:08+00:00 · Validación: 2026-10-09T13:29:08+00:00
+Generado: 2026-10-09T20:52:19+00:00 · Validación: 2026-10-09T20:52:15+00:00
 
 ## 1. Resumen
 
 | Aspecto | Solución |
 |---|---|
 | Frontend | React vite + TypeScript, react-router · hosting amplify-static |
-| API | API Gateway REST REGIONAL + 27 endpoints Lambda python3.13 (hexagonal) |
+| API | API Gateway REST REGIONAL + 51 endpoints Lambda python3.13 (hexagonal) |
 | Base de datos | Aurora PostgreSQL `may_dev_inventario_db` · 12 tablas, 3 vistas, 1 funciones |
 | Auth | Amazon Cognito (grupos: admin_ti, consulta) |
-| Requisitos | 11 en project-spec.yaml |
+| Requisitos | 17 en project-spec.yaml |
 | Exposición | internal |
 
 ## 2. Criterios de finalización (16)
@@ -43,7 +43,7 @@ Generado: 2026-10-09T13:29:08+00:00 · Validación: 2026-10-09T13:29:08+00:00
 |---|---|---|---|---|
 | RF-01 | Sesión y roles | GET /me → `SesionApi`<br>GET /sync-google/estado → `SesionApi` | `GetSessionUseCase`, `GetSyncGoogleStatusUseCase` | — |
 | RF-02 | Silos y departamentos | GET /silos → `CatalogosApi`<br>POST /silos → `CatalogosApi`<br>GET /departamentos → `CatalogosApi`<br>POST /departamentos → `CatalogosApi` | `ListSilosUseCase`, `CreateSiloUseCase`, `ListDepartamentosUseCase`, `CreateDepartamentoUseCase` | `None` |
-| RF-03 | Tipos de equipo y artículos | GET /tipos-equipo → `CatalogosApi`<br>POST /tipos-equipo → `CatalogosApi`<br>GET /articulos → `CatalogosApi`<br>POST /articulos → `CatalogosApi` | `ListTiposEquipoUseCase`, `CreateTipoEquipoUseCase`, `ListArticulosUseCase`, `CreateArticuloUseCase` | `None` |
+| RF-03 | Tipos de equipo y artículos | GET /tipos-equipo → `CatalogosApi`<br>POST /tipos-equipo → `CatalogosApi`<br>GET /articulos → `CatalogosApi`<br>POST /articulos → `CatalogosApi`<br>PATCH /tipos-equipo/{tipoId} → `CatalogosApi` | `ListTiposEquipoUseCase`, `CreateTipoEquipoUseCase`, `ListArticulosUseCase`, `CreateArticuloUseCase`, `UpdateTipoEquipoUseCase` | `None` |
 | RF-04 | Cargos y perfil de dotación | GET /cargos → `CatalogosApi`<br>POST /cargos → `CatalogosApi`<br>PUT /cargos/{cargoId}/dotacion/{tipoId} → `CatalogosApi` | `ListCargosUseCase`, `CreateCargoUseCase`, `UpdateDotacionUseCase` | `None` |
 | RF-05 | Colaboradores | GET /usuarios → `UsuariosApi`<br>POST /usuarios → `UsuariosApi`<br>PATCH /usuarios/{usuarioId} → `UsuariosApi` | `ListUsuariosUseCase`, `CreateUsuarioUseCase`, `UpdateUsuarioUseCase` | `None` |
 | RF-06 | Vacaciones | POST /usuarios/{usuarioId}/vacaciones → `UsuariosApi`<br>POST /usuarios/{usuarioId}/vacaciones/finalizar → `UsuariosApi` | `RegisterVacacionesUseCase`, `FinishVacacionesUseCase` | `None` |
@@ -52,6 +52,12 @@ Generado: 2026-10-09T13:29:08+00:00 · Validación: 2026-10-09T13:29:08+00:00
 | RF-09 | Asignación, liberación y estados | POST /activos/{activoId}/asignar → `ActivosApi`<br>POST /activos/{activoId}/liberar → `ActivosApi`<br>POST /activos/{activoId}/estado → `ActivosApi` | `AssignActivoUseCase`, `ReleaseActivoUseCase`, `ChangeActivoEstadoUseCase` | `None`, `None` |
 | RF-10 | Historial de movimientos | GET /activos/{activoId}/movimientos → `ActivosApi` | `ListMovimientosUseCase` | `None` |
 | RF-11 | Resumen de cobertura | GET /silos → `CatalogosApi`<br>GET /departamentos → `CatalogosApi`<br>GET /tipos-equipo → `CatalogosApi`<br>GET /articulos → `CatalogosApi`<br>GET /cargos → `CatalogosApi`<br>GET /usuarios → `UsuariosApi`<br>GET /activos → `ActivosApi` | `ListSilosUseCase`, `ListDepartamentosUseCase`, `ListTiposEquipoUseCase`, `ListArticulosUseCase`, `ListCargosUseCase`, `ListUsuariosUseCase`, `ListActivosUseCase` | `None` |
+| RF-12 | Roles y personas con acceso | GET /permisos → `SeguridadApi`<br>GET /roles → `SeguridadApi`<br>POST /roles → `SeguridadApi`<br>PATCH /roles/{rolId} → `SeguridadApi`<br>GET /operadores → `SeguridadApi`<br>POST /operadores → `SeguridadApi`<br>PATCH /operadores/{operadorId} → `SeguridadApi` | `ListPermisosUseCase`, `ListRolesUseCase`, `CreateRolUseCase`, `UpdateRolUseCase`, `ListOperadoresUseCase`, `InviteOperadorUseCase`, `UpdateOperadorUseCase` | `None` |
+| RF-13 | Responsable de resguardo | DELETE /usuarios/{usuarioId} → `UsuariosApi`<br>POST /usuarios/{usuarioId}/vacaciones → `UsuariosApi`<br>POST /usuarios/{usuarioId}/vacaciones/finalizar → `UsuariosApi`<br>POST /usuarios/{usuarioId}/desactivar → `UsuariosApi`<br>POST /usuarios/{usuarioId}/reactivar → `UsuariosApi`<br>POST /activos → `ActivosApi`<br>POST /activos/{activoId}/asignar → `ActivosApi`<br>POST /activos/{activoId}/liberar → `ActivosApi`<br>POST /activos/{activoId}/estado → `ActivosApi`<br>GET /operadores → `SeguridadApi` | `DeleteUsuarioUseCase`, `RegisterVacacionesUseCase`, `FinishVacacionesUseCase`, `DeactivateUsuarioUseCase`, `ReactivateUsuarioUseCase`, `CreateActivoUseCase`, `AssignActivoUseCase`, `ReleaseActivoUseCase`, `ChangeActivoEstadoUseCase`, `ListOperadoresUseCase` | `None`, `None` |
+| RF-14 | Límite de equipos por persona | POST /activos → `ActivosApi`<br>POST /activos/{activoId}/asignar → `ActivosApi`<br>POST /activos/{activoId}/liberar → `ActivosApi`<br>POST /activos/{activoId}/estado → `ActivosApi`<br>PATCH /tipos-equipo/{tipoId} → `CatalogosApi` | `CreateActivoUseCase`, `AssignActivoUseCase`, `ReleaseActivoUseCase`, `ChangeActivoEstadoUseCase`, `UpdateTipoEquipoUseCase` | `None`, `None` |
+| RF-15 | Aprobación de reasignaciones | GET /reasignaciones → `ReasignacionesApi`<br>POST /reasignaciones → `ReasignacionesApi`<br>POST /reasignaciones/{reasignacionId}/aprobar → `ReasignacionesApi`<br>POST /reasignaciones/{reasignacionId}/rechazar → `ReasignacionesApi`<br>POST /reasignaciones/{reasignacionId}/cancelar → `ReasignacionesApi` | `ListReasignacionesUseCase`, `RequestReasignacionUseCase`, `ApproveReasignacionUseCase`, `RejectReasignacionUseCase`, `CancelReasignacionUseCase` | `None`, `None` |
+| RF-16 | Cargas masivas con machote | POST /importaciones/usuarios → `ImportacionesApi`<br>POST /importaciones/activos → `ImportacionesApi` | `ImportUsuariosUseCase`, `ImportActivosUseCase` | `None`, `None` |
+| RF-17 | Marcas, modelos y características | POST /articulos → `CatalogosApi`<br>GET /marcas → `CatalogosApi`<br>POST /marcas → `CatalogosApi`<br>PATCH /marcas/{marcaId} → `CatalogosApi`<br>GET /modelos → `CatalogosApi`<br>POST /modelos → `CatalogosApi`<br>PATCH /modelos/{modeloId} → `CatalogosApi`<br>GET /caracteristicas → `CatalogosApi`<br>POST /caracteristicas → `CatalogosApi`<br>PATCH /caracteristicas/{caracteristicaId} → `CatalogosApi` | `CreateArticuloUseCase`, `ListMarcasUseCase`, `CreateMarcaUseCase`, `UpdateMarcaUseCase`, `ListModelosUseCase`, `CreateModeloUseCase`, `UpdateModeloUseCase`, `ListCaracteristicasUseCase`, `CreateCaracteristicaUseCase`, `UpdateCaracteristicaUseCase` | `None` |
 
 ### 3.2 Endpoints
 
@@ -84,6 +90,30 @@ Generado: 2026-10-09T13:29:08+00:00 · Validación: 2026-10-09T13:29:08+00:00
 | POST | /activos/{activoId}/liberar | ActivosApi | entrypoints.lambda_handlers.activos.handler | cognito |
 | POST | /activos/{activoId}/estado | ActivosApi | entrypoints.lambda_handlers.activos.handler | cognito |
 | GET | /activos/{activoId}/movimientos | ActivosApi | entrypoints.lambda_handlers.activos.handler | cognito |
+| PATCH | /tipos-equipo/{tipoId} | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| GET | /marcas | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| POST | /marcas | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| PATCH | /marcas/{marcaId} | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| GET | /modelos | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| POST | /modelos | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| PATCH | /modelos/{modeloId} | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| GET | /caracteristicas | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| POST | /caracteristicas | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| PATCH | /caracteristicas/{caracteristicaId} | CatalogosApi | entrypoints.lambda_handlers.catalogos.handler | cognito |
+| GET | /permisos | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| GET | /roles | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| POST | /roles | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| PATCH | /roles/{rolId} | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| GET | /operadores | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| POST | /operadores | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| PATCH | /operadores/{operadorId} | SeguridadApi | entrypoints.lambda_handlers.seguridad.handler | cognito |
+| GET | /reasignaciones | ReasignacionesApi | entrypoints.lambda_handlers.reasignaciones.handler | cognito |
+| POST | /reasignaciones | ReasignacionesApi | entrypoints.lambda_handlers.reasignaciones.handler | cognito |
+| POST | /reasignaciones/{reasignacionId}/aprobar | ReasignacionesApi | entrypoints.lambda_handlers.reasignaciones.handler | cognito |
+| POST | /reasignaciones/{reasignacionId}/rechazar | ReasignacionesApi | entrypoints.lambda_handlers.reasignaciones.handler | cognito |
+| POST | /reasignaciones/{reasignacionId}/cancelar | ReasignacionesApi | entrypoints.lambda_handlers.reasignaciones.handler | cognito |
+| POST | /importaciones/usuarios | ImportacionesApi | entrypoints.lambda_handlers.importaciones.handler | cognito |
+| POST | /importaciones/activos | ImportacionesApi | entrypoints.lambda_handlers.importaciones.handler | cognito |
 
 ### 3.3 Objetos de base de datos
 
@@ -127,7 +157,7 @@ Roles: `ro_inventario`, `rw_inventario`, `ddl_inventario`, `admin_inventario` ·
 
 | Tabla | Regla | Comando | Condición | Se aplica en |
 |---|---|---|---|---|
-| * | Solo admin_ti modifica; consulta (o sin grupo) solo lee | INSERT/UPDATE/DELETE |  | application.use_cases.common.require_admin en cada caso de uso de escritura |
+| * | Permisos por rol configurable (tbl_rol_permiso); el grupo admin_ti y el rol Superadministrador tienen todos; sin operador solo lectura | INSERT/UPDATE/DELETE |  | application.use_cases.common.require(principal, permiso) en cada caso de uso de escritura; el principal se completa en ResolveOperadorUseCase |
 
 ### 3.5 Servicios
 
@@ -141,6 +171,8 @@ Roles: `ro_inventario`, `rw_inventario`, `ddl_inventario`, `admin_inventario` ·
 - Endpoints agrupados en una Lambda por módulo (sesion, catalogos, usuarios, activos) con despacho por ruta: 10 usuarios sin concurrencia, menos arranques en frío.
 - Contrato REST de docs/API.md sin el prefijo /api: la URL base es la del stage de API Gateway (VITE_API_BASE_URL).
 - Errores en el formato estándar {error: {code, title, message, details}}; las reglas de negocio responden 422.
+- Roles y permisos en la base (tbl_rol, tbl_rol_permiso, tbl_operador) en lugar de grupos de Cognito: se administran desde la aplicación; Cognito solo autentica e invita.
+- Cargas masivas: el navegador lee el machote .xlsx y envía las filas en JSON; el backend valida fila por fila (savepoint) y aplica todo o nada.
 
 **Incompatibilidades:** ninguno.
 
@@ -165,7 +197,7 @@ Roles: `ro_inventario`, `rw_inventario`, `ddl_inventario`, `admin_inventario` ·
 
 | Criterio | Verificación | Estado | Detalle |
 |---|---|---|---|
-| C1 | project-spec.yaml con requisitos identificados | OK | 11 requisitos |
+| C1 | project-spec.yaml con requisitos identificados | OK | 17 requisitos |
 | C1 | Modelo de datos fuente aplicado e introspeccionado | OK |  |
 | C2 | Manifest completo | OK |  |
 | C2 | Cada regla de autorización tiene dónde se aplica (enforced_in) | OK |  |
@@ -177,17 +209,17 @@ Roles: `ro_inventario`, `rw_inventario`, `ddl_inventario`, `admin_inventario` ·
 | C8 | Un único template SAM parametrizado | OK |  |
 | C8 | Template conforme al estándar (parámetros, runtime, logs) | OK |  |
 | C5 | Estructura hexagonal del backend | OK |  |
-| C5 | Handlers del manifest y del template implementados | OK | 4 handlers |
-| C5 | Use cases del manifest implementados | OK | 27 use cases |
+| C5 | Handlers del manifest y del template implementados | OK | 7 handlers |
+| C5 | Use cases del manifest implementados | OK | 51 use cases |
 | C5 | Dependencias entre capas y handlers delgados | OK |  |
 | C5 | SQL solo en adapters y con nombres de Aurora | OK |  |
-| C6 | pytest (unitarios con fakes) | OK | 47 passed, 3 skipped in 0.17s |
+| C6 | pytest (unitarios con fakes) | OK | 65 passed, 3 skipped in 0.29s |
 | C6 | Cada módulo del manifest tiene tests unitarios | OK |  |
-| C6 | pytest de integración contra el esquema generado (PG efímero) | OK | 3 passed in 0.21s |
+| C6 | pytest de integración contra el esquema generado (PG efímero) | OK | 4 passed in 0.41s |
 | C7 | ruff check | OK |  |
 | C8 | samconfig.toml dev/qa/prod con tags y rutas por ambiente | OK |  |
 | C9 | cfn-lint | OK |  |
-| C9 | Transformación SAM | OK | 48 recursos CloudFormation |
+| C9 | Transformación SAM | OK | 82 recursos CloudFormation |
 | C10 | IAM sin comodines (salvo ENI documentado) | OK |  |
 | C10 | Colas SQS con los 4 controles del estándar | OK | sin colas (no aplica) |
 | C11 | Capa compartida (gateway HTTP, auth, env) | OK |  |

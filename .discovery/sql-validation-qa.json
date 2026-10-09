@@ -12,6 +12,26 @@
       "detail": ""
     },
     {
+      "step": "cambio 001_seguridad_roles (ejecución 1)",
+      "ok": true,
+      "detail": "BEGIN\nSET\nSET\nCREATE TABLE\nCREATE TABLE\nCREATE TABLE\nCREATE INDEX\nCREATE TABLE\nCREATE TABLE\nCREATE INDEX\nCREATE INDEX\nCOMMENT\nINSERT 0 8\nINSERT 0 5\nINSERT 0 13\nINSERT 0 1\nCambio 001_seguridad_roles aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 002_custodia_y_limites (ejecución 1)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_002_custodia_y_limites.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nCREATE INDEX\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nUPDATE 0\nINSERT 0 1\nCambio 002_custodia_y_limites aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 003_reasignaciones (ejecución 1)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_003_reasignaciones.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCREATE TYPE\nCREATE TABLE\nCREATE INDEX\nCREATE INDEX\nCOMMENT\nINSERT 0 1\nCambio 003_reasignaciones aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 004_marcas_modelos_caracteristicas (ejecución 1)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_004_marcas_modelos_caracteristicas.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCREATE TABLE\nCREATE INDEX\nCREATE TABLE\nCREATE INDEX\nCREATE TABLE\nCREATE INDEX\nCREATE TABLE\nCREATE INDEX\nALTER TABLE\nALTER TABLE\nCREATE INDEX\nCREATE TABLE\nINSERT 0 0\nINSERT 0 0\nUPDATE 0\nINSERT 0 1\nCambio 004_marcas_modelos_caracteristicas aplicado.\nCOMMIT\n"
+    },
+    {
       "step": "datos iniciales (ejecución 1)",
       "ok": true,
       "detail": ""
@@ -30,6 +50,26 @@
       "step": "schema (ejecución 2)",
       "ok": true,
       "detail": "ora_postgresql_schema.sql:114: NOTICE:  relation \"tbl_silo\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:125: NOTICE:  relation \"tbl_sync_google_log\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:130: NOTICE:  relation \"tbl_tipo_equipo\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:140: NOTICE:  relation \"tbl_articulo\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:144: NOTICE:  relation \"tbl_cargo_alias_google\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:150: NOTICE:  relation \"tbl_departamento\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:156: NOTICE:  relation \"tbl_cargo_dotacion\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:170: NOTICE:  relation \"tbl_usuario\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:181: NOTICE:  relation \"tbl_activo\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:191: NOTICE:  relation \"tbl_vacacion\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:202: NOTICE:  relation \"tbl_activo_movimiento\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:513: NOTICE:  relation \"idx_activo_usuario_id\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:514: NOTICE:  relation \"uidx_activo_ux_activo_serial\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:515: NOTICE:  relation \"uidx_articulo_tipo_id_expr\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:516: NOTICE:  relation \"uidx_cargo_ux_cargo_nombre\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:517: NOTICE:  relation \"uidx_tipo_equipo_ux_tipo_equipo_nombre\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:518: NOTICE:  relation \"uidx_usuario_ux_usuario_codigo\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:519: NOTICE:  relation \"uidx_usuario_ux_usuario_correo_partial\" already exists, skipping\npsql:/home/user/inventario-equipos/database/environments/qa/aurora_postgresql_schema.sql:520: NOTICE:  relation \"uidx_vacacion_usuario_id_partial\" already exists, skipping\n"
+    },
+    {
+      "step": "cambio 001_seguridad_roles (ejecución 2)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_001_seguridad_roles.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCambio 001_seguridad_roles ya estaba aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 002_custodia_y_limites (ejecución 2)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_002_custodia_y_limites.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCambio 002_custodia_y_limites ya estaba aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 003_reasignaciones (ejecución 2)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_003_reasignaciones.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCambio 003_reasignaciones ya estaba aplicado.\nCOMMIT\n"
+    },
+    {
+      "step": "cambio 004_marcas_modelos_caracteristicas (ejecución 2)",
+      "ok": true,
+      "detail": "psql:/home/user/inventario-equipos/database/environments/qa/.change_004_marcas_modelos_caracteristicas.sql:10: NOTICE:  relation \"tbl_schema_changes\" already exists, skipping\nBEGIN\nSET\nSET\nCREATE TABLE\nCambio 004_marcas_modelos_caracteristicas ya estaba aplicado.\nCOMMIT\n"
     },
     {
       "step": "datos iniciales (ejecución 2)",

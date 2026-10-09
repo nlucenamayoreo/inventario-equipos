@@ -1,8 +1,7 @@
 import type { Modelo } from '../../../shared/domain/modelo';
 import { usePermiso } from '../../../shared/state/datos';
-import { MAX_FILAS } from '../api/machotes';
 import { TarjetaCarga } from '../components/tarjeta-carga';
-import { useCargaController } from '../hooks/use-carga-controller';
+import { MAX_FILAS, useCargaController } from '../hooks/use-carga-controller';
 
 export function CargasPage({ m }: { m: Modelo }) {
   const puedeUsuarios = usePermiso('usuarios.gestionar');

@@ -3,6 +3,7 @@ import { ApiError } from '../../../shared/api/api-error';
 import type { ResultadoImportacion } from '../../../shared/api/types';
 import type { Modelo } from '../../../shared/domain/modelo';
 import { useAccion } from '../../../shared/state/datos';
+export { MAX_FILAS } from '../api/machotes';
 import { cargasApi } from '../api/cargas-api';
 import {
   ARCHIVO,

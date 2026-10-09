@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T13:29:08+00:00",
+  "generated_at": "2026-10-09T20:52:15+00:00",
   "dynamic_checks_run": true,
   "mode": "greenfield",
   "overall": "PASSED",
@@ -75,7 +75,7 @@
       "criterion": 1,
       "title": "project-spec.yaml con requisitos identificados",
       "status": "OK",
-      "detail": "11 requisitos",
+      "detail": "17 requisitos",
       "items": [],
       "items_total": 0
     },
@@ -183,7 +183,7 @@
       "criterion": 5,
       "title": "Handlers del manifest y del template implementados",
       "status": "OK",
-      "detail": "4 handlers",
+      "detail": "7 handlers",
       "items": [],
       "items_total": 0
     },
@@ -192,7 +192,7 @@
       "criterion": 5,
       "title": "Use cases del manifest implementados",
       "status": "OK",
-      "detail": "27 use cases",
+      "detail": "51 use cases",
       "items": [],
       "items_total": 0
     },
@@ -219,7 +219,7 @@
       "criterion": 6,
       "title": "pytest (unitarios con fakes)",
       "status": "OK",
-      "detail": "47 passed, 3 skipped in 0.17s",
+      "detail": "65 passed, 3 skipped in 0.29s",
       "items": [],
       "items_total": 0
     },
@@ -237,7 +237,7 @@
       "criterion": 6,
       "title": "pytest de integración contra el esquema generado (PG efímero)",
       "status": "OK",
-      "detail": "3 passed in 0.21s",
+      "detail": "4 passed in 0.41s",
       "items": [],
       "items_total": 0
     },
@@ -273,7 +273,7 @@
       "criterion": 9,
       "title": "Transformación SAM",
       "status": "OK",
-      "detail": "48 recursos CloudFormation",
+      "detail": "82 recursos CloudFormation",
       "items": [],
       "items_total": 0
     },
