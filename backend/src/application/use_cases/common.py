@@ -1,4 +1,4 @@
-"""Reglas compartidas por los casos de uso: roles, parseo de parámetros y registro de movimientos."""
+"""Reglas compartidas por los casos de uso: permisos, parseo, custodia, límites y registro de movimientos."""
 
 from __future__ import annotations
 
@@ -9,26 +9,32 @@ from typing import Any
 from application.dto.principal import Principal
 from application.ports.app_unit_of_work import AppUnitOfWork
 from domain.entities.activos import Activo
-from domain.exceptions import ForbiddenError, ValidationError
+from domain.entities.catalogos import Articulo
+from domain.exceptions import BusinessRuleViolation, ForbiddenError, ValidationError
 
-GRUPO_ADMIN = "admin_ti"
-GRUPO_CONSULTA = "consulta"
 _CORREO_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
-def es_admin(principal: Principal) -> bool:
-    return principal.has_group(GRUPO_ADMIN)
-
-
-def require_admin(principal: Principal) -> None:
-    """Solo ``admin_ti`` modifica; ``consulta`` (o sin grupo) es de solo lectura."""
-    if not es_admin(principal):
-        raise ForbiddenError("Su rol es de solo consulta.")
+def require(principal: Principal, permiso: str) -> None:
+    """El rol del operador debe incluir el permiso (el superadministrador tiene todos)."""
+    if not principal.activo:
+        raise ForbiddenError("Su acceso a la aplicación está desactivado.")
+    if not principal.puede(permiso):
+        raise ForbiddenError("Su rol no permite esta acción.")
 
 
 def operador(principal: Principal) -> str:
     """Quién realiza la acción (``realizado_por`` del historial)."""
     return (principal.email or principal.subject or "sistema").lower()
+
+
+def operador_id(principal: Principal) -> int:
+    """Operador (persona con acceso) que actúa; necesario para custodiar o solicitar."""
+    if principal.operador_id is None:
+        raise ForbiddenError(
+            "Su cuenta no está registrada como persona con acceso. Contacte al administrador."
+        )
+    return principal.operador_id
 
 
 def parse_id(raw: Any, field: str) -> int:
@@ -72,10 +78,39 @@ def fecha(raw: Any, field: str, mensaje: str) -> date:
         raise ValidationError(mensaje, details={"field": field}) from error
 
 
+def custodio(uow: AppUnitOfWork, principal: Principal, raw: Any) -> int:
+    """Responsable del resguardo: el indicado o, si no se indica, el operador que actúa."""
+    custodio_id = parse_id_opcional(raw, "custodioId") or operador_id(principal)
+    persona = uow.seguridad.get_operador(custodio_id)
+    if persona is None or not persona.activo:
+        raise ValidationError(
+            "El responsable del resguardo debe ser una persona activa con acceso a la aplicación.",
+            details={"field": "custodioId"},
+        )
+    return custodio_id
+
+
+def validar_limite(
+    uow: AppUnitOfWork, usuario_id: int, nombre: str, articulo: Articulo, nuevos: int = 1
+) -> None:
+    """Máximo de equipos del mismo tipo por persona (Laptop = 2: la propia y una de resguardo o préstamo)."""
+    tipo = uow.catalogos.get_tipo(articulo.tipo_id)
+    if tipo is None:
+        return
+    actuales = uow.activos.tenencia_por_tipo(usuario_id, tipo.id)
+    if actuales + nuevos > tipo.limite:
+        raise BusinessRuleViolation(
+            f"{nombre} ya tiene {actuales} equipo(s) de tipo {tipo.nombre}; "
+            f"el máximo por persona es {tipo.limite}.",
+            code="limite_por_tipo",
+        )
+
+
 def registrar(uow: AppUnitOfWork, antes: Activo, despues: Activo, motivo: str, quien: str) -> bool:
-    """Guarda el activo y, si cambió su estado o titular, deja el movimiento en el historial."""
+    """Guarda el activo y, si cambió su estado, titular o custodio, deja el movimiento en el historial."""
     uow.activos.save(despues)
-    if (antes.estado, antes.usuario_id) == (despues.estado, despues.usuario_id):
+    clave = lambda a: (a.estado, a.usuario_id, a.custodio_id)  # noqa: E731
+    if clave(antes) == clave(despues):
         return False
     uow.activos.add_movimiento(antes, despues, motivo, quien)
     return True

@@ -10,15 +10,19 @@ from application.dto.principal import Principal
 from application.ports.app_unit_of_work import AppUnitOfWork, UnitOfWorkFactory
 from application.use_cases.common import (
     correo,
+    custodio,
     fecha,
     operador,
     parse_id,
     parse_id_opcional,
     registrar,
-    require_admin,
+    require,
     texto,
+    validar_limite,
 )
 from domain.entities.activos import EstadoActivo
+from domain.entities.catalogos import Articulo
+from domain.entities.seguridad import USUARIOS
 from domain.entities.usuarios import AccionVacacion, EstadoUsuario, ResultadoBaja, Usuario
 from domain.exceptions import BusinessRuleViolation, ConflictError, NotFoundError, ValidationError
 
@@ -54,8 +58,17 @@ def _validar_cargo_depto(uow: AppUnitOfWork, cargo_id: int | None, departamento_
         raise ValidationError("Seleccione un departamento válido.", details={"field": "departamentoId"})
 
 
+def alta_usuario(
+    uow: AppUnitOfWork, codigo: str, nombre: str, mail: str | None, cargo_id: int, departamento_id: int
+) -> Usuario:
+    """Regla común del alta individual y la carga masiva."""
+    _validar_unicos(uow, codigo, mail, None)
+    _validar_cargo_depto(uow, cargo_id, departamento_id)
+    return uow.usuarios.create(codigo, nombre, mail, cargo_id, departamento_id)
+
+
 def retirar_de_servicio(
-    uow: AppUnitOfWork, usuario_id: int, destino: EstadoActivo, motivo: str, quien: str
+    uow: AppUnitOfWork, usuario_id: int, destino: EstadoActivo, motivo: str, quien: str, custodio_id: int
 ) -> ResultadoBaja:
     """Efectos comunes de la baja y la desactivación sobre equipos y vacaciones.
 
@@ -69,10 +82,12 @@ def retirar_de_servicio(
         if activo.estado is destino:
             continue
         titular = None if destino is EstadoActivo.DISPONIBLE else usuario_id
-        registrar(uow, activo, activo.mover(destino, titular=titular), motivo, quien)
+        registrar(uow, activo, activo.mover(destino, titular=titular, custodio_id=custodio_id), motivo, quien)
         liberados += 1
     for activo in uow.activos.prestados_a(usuario_id):
-        registrar(uow, activo, activo.mover(EstadoActivo.EN_RESGUARDO), motivo, quien)
+        registrar(
+            uow, activo, activo.mover(EstadoActivo.EN_RESGUARDO, custodio_id=custodio_id), motivo, quien
+        )
         devueltos += 1
     ajustadas = uow.usuarios.quitar_suplente(usuario_id)
     uow.usuarios.finalizar_vacacion(usuario_id)
@@ -87,7 +102,7 @@ class ListUsuariosUseCase(_Base):
 
 class CreateUsuarioUseCase(_Base):
     def execute(self, principal: Principal, body: dict[str, Any]) -> Usuario:
-        require_admin(principal)
+        require(principal, USUARIOS)
         mensaje = "Código, nombre, cargo y departamento son obligatorios."
         codigo = texto(body.get("codigo"), "codigo", mensaje, maximo=40)
         nombre = texto(body.get("nombre"), "nombre", mensaje, maximo=150)
@@ -97,9 +112,7 @@ class CreateUsuarioUseCase(_Base):
         departamento_id = parse_id(body.get("departamentoId"), "departamentoId")
         mail = correo(body.get("correo"))
         with self._uow_factory(principal) as uow:
-            _validar_unicos(uow, codigo, mail, None)
-            _validar_cargo_depto(uow, cargo_id, departamento_id)
-            usuario = uow.usuarios.create(codigo, nombre, mail, cargo_id, departamento_id)
+            usuario = alta_usuario(uow, codigo, nombre, mail, cargo_id, departamento_id)
             uow.commit()
             return usuario
 
@@ -108,7 +121,7 @@ class UpdateUsuarioUseCase(_Base):
     """Cambiar de cargo no libera equipos: los que el nuevo cargo no permite quedan «fuera de perfil»."""
 
     def execute(self, principal: Principal, usuario_raw: str, body: dict[str, Any]) -> Usuario:
-        require_admin(principal)
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         cambios: dict[str, Any] = {}
         if "codigo" in body:
@@ -136,13 +149,16 @@ class UpdateUsuarioUseCase(_Base):
 class DeleteUsuarioUseCase(_Base):
     """Baja lógica: conserva el historial."""
 
-    def execute(self, principal: Principal, usuario_raw: str) -> ResultadoBaja:
-        require_admin(principal)
+    def execute(
+        self, principal: Principal, usuario_raw: str, custodio_raw: str | None = None
+    ) -> ResultadoBaja:
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         with self._uow_factory(principal) as uow:
             usuario = _get(uow, usuario_id)
+            responsable = custodio(uow, principal, custodio_raw)
             resultado = retirar_de_servicio(
-                uow, usuario_id, EstadoActivo.DISPONIBLE, "baja_usuario", operador(principal)
+                uow, usuario_id, EstadoActivo.DISPONIBLE, "baja_usuario", operador(principal), responsable
             )
             uow.usuarios.save(replace(usuario, estado=EstadoUsuario.ELIMINADO, vacacion=None))
             uow.commit()
@@ -151,7 +167,7 @@ class DeleteUsuarioUseCase(_Base):
 
 class RegisterVacacionesUseCase(_Base):
     def execute(self, principal: Principal, usuario_raw: str, body: dict[str, Any]) -> Usuario:
-        require_admin(principal)
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         if not body.get("desde") or not body.get("hasta") or not body.get("accion"):
             raise ValidationError("Indique fechas y qué pasa con los equipos.")
@@ -172,24 +188,29 @@ class RegisterVacacionesUseCase(_Base):
             usuario = _get(uow, usuario_id)
             if usuario.estado is not EstadoUsuario.ACTIVO:
                 raise BusinessRuleViolation("Solo se pueden registrar vacaciones a usuarios activos.")
+            entregar = [a for a in uow.activos.de_titular(usuario_id) if a.estado is EstadoActivo.ASIGNADO]
+            responsable = None
             if accion is AccionVacacion.PRESTAMO:
-                self._validar_suplente(uow, usuario_id, suplente_id)
+                self._validar_suplente(uow, usuario_id, suplente_id, entregar)
+            elif accion is AccionVacacion.RESGUARDO:
+                responsable = custodio(uow, principal, body.get("custodioId"))
             uow.usuarios.create_vacacion(usuario_id, desde, hasta, accion, suplente_id, nota)
             quien = operador(principal)
-            for activo in uow.activos.de_titular(usuario_id):
-                if activo.estado is not EstadoActivo.ASIGNADO or accion is AccionVacacion.CONSERVA:
-                    continue
+            for activo in entregar if accion is not AccionVacacion.CONSERVA else []:
                 estado = (
                     EstadoActivo.EN_RESGUARDO if accion is AccionVacacion.RESGUARDO else EstadoActivo.PRESTAMO
                 )
-                registrar(uow, activo, activo.mover(estado, prestado_a=suplente_id), "vacaciones", quien)
+                nuevo = activo.mover(estado, prestado_a=suplente_id, custodio_id=responsable)
+                registrar(uow, activo, nuevo, "vacaciones", quien)
             uow.usuarios.save(replace(usuario, estado=EstadoUsuario.VACACIONES))
             actualizado = _get(uow, usuario_id)
             uow.commit()
             return actualizado
 
     @staticmethod
-    def _validar_suplente(uow: AppUnitOfWork, usuario_id: int, suplente_id: int | None) -> None:
+    def _validar_suplente(
+        uow: AppUnitOfWork, usuario_id: int, suplente_id: int | None, entregar: list
+    ) -> None:
         if suplente_id is None:
             raise ValidationError(
                 "Seleccione el suplente que recibe los equipos.", details={"field": "suplenteId"}
@@ -199,11 +220,18 @@ class RegisterVacacionesUseCase(_Base):
         suplente = uow.usuarios.get(suplente_id)
         if suplente is None or suplente.estado is not EstadoUsuario.ACTIVO:
             raise BusinessRuleViolation("El suplente debe estar activo.")
+        por_tipo: dict[int, tuple[Articulo, int]] = {}
+        for activo in entregar:
+            articulo = uow.catalogos.get_articulo(activo.articulo_id)
+            _, n = por_tipo.get(articulo.tipo_id, (articulo, 0))
+            por_tipo[articulo.tipo_id] = (articulo, n + 1)
+        for articulo, n in por_tipo.values():
+            validar_limite(uow, suplente.id, suplente.nombre, articulo, nuevos=n)
 
 
 class FinishVacacionesUseCase(_Base):
     def execute(self, principal: Principal, usuario_raw: str) -> Usuario:
-        require_admin(principal)
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         with self._uow_factory(principal) as uow:
             usuario = _get(uow, usuario_id)
@@ -223,15 +251,22 @@ class FinishVacacionesUseCase(_Base):
 class DeactivateUsuarioUseCase(_Base):
     """Desactivación manual (cuentas fuera de Google Workspace): equipos → pendiente de recuperación."""
 
-    def execute(self, principal: Principal, usuario_raw: str) -> Usuario:
-        require_admin(principal)
+    def execute(self, principal: Principal, usuario_raw: str, body: dict[str, Any] | None = None) -> Usuario:
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         with self._uow_factory(principal) as uow:
             usuario = _get(uow, usuario_id)
             if usuario.estado is EstadoUsuario.DESACTIVADO:
                 raise BusinessRuleViolation("El usuario ya está desactivado.")
+            # los equipos que tenía en préstamo vuelven a TI: alguien los custodia
+            responsable = custodio(uow, principal, (body or {}).get("custodioId"))
             retirar_de_servicio(
-                uow, usuario_id, EstadoActivo.PENDIENTE_RECUPERACION, "desactivacion", operador(principal)
+                uow,
+                usuario_id,
+                EstadoActivo.PENDIENTE_RECUPERACION,
+                "desactivacion",
+                operador(principal),
+                responsable,
             )
             uow.usuarios.save(
                 replace(
@@ -251,7 +286,7 @@ class ReactivateUsuarioUseCase(_Base):
     """Vuelve a activo; los equipos siguen pendientes de recuperación hasta que TI decida."""
 
     def execute(self, principal: Principal, usuario_raw: str) -> Usuario:
-        require_admin(principal)
+        require(principal, USUARIOS)
         usuario_id = parse_id(usuario_raw, "usuarioId")
         with self._uow_factory(principal) as uow:
             usuario = _get(uow, usuario_id)

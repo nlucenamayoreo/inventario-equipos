@@ -84,6 +84,11 @@ class PostgresUsuarioRepository(UsuarioRepository):
             row = cursor.fetchone()
         return _usuario(row) if row else None
 
+    def por_codigo(self, codigo: str) -> Usuario | None:
+        with self._execute(_SELECT_SQL.format(extra="AND lower(u.codigo) = lower(%s)"), (codigo,)) as cursor:
+            row = cursor.fetchone()
+        return _usuario(row) if row else None
+
     def estado_por_codigo(self, codigo: str, excluir_id: int | None = None) -> EstadoUsuario | None:
         sql = "SELECT estado::text AS estado FROM tbl_usuario WHERE lower(codigo) = lower(%s) AND id <> %s"
         with self._execute(sql, (codigo, excluir_id or 0)) as cursor:

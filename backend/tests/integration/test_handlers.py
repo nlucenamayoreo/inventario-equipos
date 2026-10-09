@@ -16,7 +16,16 @@ if not DATABASE_URL:
 
 import psycopg  # noqa: E402
 
-from entrypoints.lambda_handlers import activos, catalogos, container, sesion, usuarios  # noqa: E402
+from entrypoints.lambda_handlers import (  # noqa: E402
+    activos,
+    catalogos,
+    container,
+    importaciones,
+    reasignaciones,
+    seguridad,
+    sesion,
+    usuarios,
+)
 from infrastructure.database.postgresql.app_unit_of_work import AppPostgresUnitOfWork  # noqa: E402
 from infrastructure.database.postgresql.connection import (  # noqa: E402
     PostgresConnectionFactory,
@@ -64,11 +73,12 @@ def _call(handler, method, resource, body=None, path=None, groups="admin_ti"):
 
 
 def test_contrato_http_de_punta_a_punta():
-    assert _call(sesion.handler, "GET", "/me") == (
-        200,
-        {"correo": "admin_ti@empresa.com", "nombre": "Operador TI", "rol": "admin_ti"},
-    )
-    assert _call(sesion.handler, "GET", "/me", groups="consulta")[1]["rol"] == "consulta"
+    status, me = _call(sesion.handler, "GET", "/me")
+    assert status == 200 and me["rol"] == "Superadministrador" and me["superadmin"] is True
+    assert set(me) == {"correo", "nombre", "rol", "operadorId", "superadmin", "activo", "permisos"}
+    assert "reasignaciones.aprobar" in me["permisos"]
+    visitante = _call(sesion.handler, "GET", "/me", groups="consulta")[1]
+    assert (visitante["rol"], visitante["permisos"], visitante["operadorId"]) == ("Visitante", [], None)
     assert _call(sesion.handler, "GET", "/sync-google/estado") == (
         200,
         {"ultimaExitosa": None, "ultimaCorrida": None},
@@ -83,13 +93,47 @@ def test_contrato_http_de_punta_a_punta():
     assert status == 201 and depto["siloId"] == silo["id"]
     tipos = _call(catalogos.handler, "GET", "/tipos-equipo")[1]
     laptop = next(t for t in tipos if t["nombre"] == "Laptop")
+    assert laptop["maxPorUsuario"] == 2
+    status, marca = _call(catalogos.handler, "POST", "/marcas", {"nombre": "Dell-HTTP"})
+    assert status == 201 and set(marca) == {"id", "nombre", "activo"}
+    status, modelo = _call(
+        catalogos.handler,
+        "POST",
+        "/modelos",
+        {"marcaId": marca["id"], "tipoId": laptop["id"], "nombre": "HTTP-1"},
+    )
+    assert status == 201 and set(modelo) == {"id", "marcaId", "tipoId", "nombre", "activo"}
+    status, ram = _call(
+        catalogos.handler,
+        "POST",
+        "/caracteristicas",
+        {"tipoId": laptop["id"], "nombre": "RAM", "valores": ["16 GB"]},
+    )
+    assert status == 201 and ram["valores"][0].keys() == {"id", "valor", "activo"}
     status, art = _call(
         catalogos.handler,
         "POST",
         "/articulos",
-        {"tipoId": laptop["id"], "marca": "Dell", "modelo": "HTTP-1", "vidaUtilMeses": 48},
+        {
+            "modeloId": modelo["id"],
+            "vidaUtilMeses": 48,
+            "caracteristicas": [{"caracteristicaId": ram["id"], "valorId": ram["valores"][0]["id"]}],
+        },
     )
     assert status == 201 and art["codigo"].startswith("ART-") and art["vidaUtilMeses"] == 48
+    assert (
+        art["marca"] == "Dell-HTTP" and art["modeloId"] == modelo["id"] and len(art["caracteristicas"]) == 1
+    )
+    status, tipo = _call(
+        catalogos.handler,
+        "PATCH",
+        "/tipos-equipo/{tipoId}",
+        {"maxPorUsuario": 3},
+        {"tipoId": str(laptop["id"])},
+    )
+    assert status == 200 and tipo["maxPorUsuario"] == 3
+    for recurso in ("/marcas", "/modelos", "/caracteristicas"):
+        assert _call(catalogos.handler, "GET", recurso, groups="consulta")[0] == 200
     status, cargo = _call(catalogos.handler, "POST", "/cargos", {"nombre": "HTTP-Cargo"})
     assert status == 201 and cargo["dotacion"][0].keys() == {"tipoId", "nivel", "articuloRestringidoId"}
     status, cargo = _call(
@@ -161,3 +205,97 @@ def test_contrato_http_de_punta_a_punta():
     status, err = _call(activos.handler, "POST", "/activos/{activoId}/liberar", None, aid)
     assert status == 422 and err["error"]["message"] == "El equipo no tiene titular."
     assert any(x["serial"] == "HTTP-SN" for x in _call(activos.handler, "GET", "/activos")[1])
+
+    # seguridad: roles y personas con acceso
+    status, roles = _call(seguridad.handler, "GET", "/roles")
+    assert status == 200 and {"Superadministrador", "Gerente de sistemas", "Visitante"} <= {
+        r["nombre"] for r in roles
+    }
+    assert len(_call(seguridad.handler, "GET", "/permisos")[1]) == 8
+    status, rol = _call(seguridad.handler, "POST", "/roles", {"nombre": "Auditor", "permisos": []})
+    assert status == 201 and rol["esSistema"] is False
+    rid = {"rolId": str(rol["id"])}
+    status, rol = _call(seguridad.handler, "PATCH", "/roles/{rolId}", {"permisos": ["activos.asignar"]}, rid)
+    assert status == 200 and rol["permisos"] == ["activos.asignar"]
+    assert _call(seguridad.handler, "POST", "/roles", {"nombre": "X"}, groups="consulta")[0] == 403
+    status, operadores = _call(seguridad.handler, "GET", "/operadores")
+    assert status == 200 and operadores[0].keys() == {
+        "id",
+        "correo",
+        "nombre",
+        "rolId",
+        "rolNombre",
+        "activo",
+        "creadoEn",
+    }
+    yo = operadores[0]["id"]
+    status, err = _call(
+        seguridad.handler, "PATCH", "/operadores/{operadorId}", {"activo": False}, {"operadorId": str(yo)}
+    )
+    assert status == 422
+
+    # reasignaciones con aprobación
+    status, u2 = _call(
+        usuarios.handler,
+        "POST",
+        "/usuarios",
+        {"codigo": "H-2", "nombre": "Beto", "cargoId": cargo["id"], "departamentoId": depto["id"]},
+    )
+    status, u3 = _call(
+        usuarios.handler,
+        "POST",
+        "/usuarios",
+        {"codigo": "H-3", "nombre": "Ceci", "cargoId": cargo["id"], "departamentoId": depto["id"]},
+    )
+    status, b = _call(
+        activos.handler,
+        "POST",
+        "/activos",
+        {"articuloId": art["id"], "serial": "HTTP-2", "usuarioId": u2["id"]},
+    )
+    assert status == 201
+    status, sol = _call(
+        reasignaciones.handler,
+        "POST",
+        "/reasignaciones",
+        {"activoId": b["id"], "usuarioDestino": u3["id"], "motivo": "Cambio de área"},
+    )
+    assert status == 201 and sol["estado"] == "pendiente" and sol["solicitadoPorNombre"] == "Operador TI"
+    pendientes = _call(reasignaciones.handler, "GET", "/reasignaciones", groups="consulta")[1]
+    assert [r["id"] for r in pendientes] == [sol["id"]]
+    status, ok = _call(
+        reasignaciones.handler,
+        "POST",
+        "/reasignaciones/{reasignacionId}/aprobar",
+        None,
+        {"reasignacionId": str(sol["id"])},
+    )
+    assert status == 200 and ok["estado"] == "aprobada"
+    status, err = _call(
+        reasignaciones.handler,
+        "POST",
+        "/reasignaciones/{reasignacionId}/rechazar",
+        {"comentario": "x"},
+        {"reasignacionId": str(sol["id"])},
+    )
+    assert status == 422
+
+    # carga masiva (vista previa, sin aplicar)
+    filas = [
+        {
+            "codigo": "M-1",
+            "nombre": "Masivo",
+            "cargo": "HTTP-Cargo",
+            "departamento": "Ventas",
+            "silo": "HTTP-Silo",
+        }
+    ]
+    status, previa = _call(importaciones.handler, "POST", "/importaciones/usuarios", {"filas": filas})
+    assert status == 200 and previa == {
+        "filas": [{"fila": 2, "ok": True, "detalle": "M-1 · Masivo"}],
+        "errores": 0,
+        "validas": 1,
+        "aplicado": False,
+    }
+    status, _ = _call(importaciones.handler, "POST", "/importaciones/activos", {"filas": [{"tipo": "X"}]})
+    assert status == 200

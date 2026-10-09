@@ -5,9 +5,18 @@ from __future__ import annotations
 from functools import lru_cache
 
 from application.dto.principal import Principal
-from application.use_cases import activos, catalogos, sesion, usuarios
+from application.use_cases import (
+    activos,
+    catalogos,
+    importaciones,
+    reasignaciones,
+    seguridad,
+    sesion,
+    usuarios,
+)
 from application.use_cases.resolve_current_user import ResolveCurrentUserUseCase
 from entrypoints.lambda_handlers.bootstrap import connection_factory
+from infrastructure.aws.cognito_directorio import CognitoDirectorio
 from infrastructure.database.postgresql.app_unit_of_work import AppPostgresUnitOfWork
 
 
@@ -21,12 +30,13 @@ def _current_user() -> ResolveCurrentUserUseCase:
 
 
 def resolve_principal(principal: Principal) -> Principal:
-    return _current_user().execute(principal)
+    """Usuario de la app (sub de Cognito) + operador con su rol y permisos vigentes."""
+    return seguridad.ResolveOperadorUseCase(uow_factory).execute(_current_user().execute(principal))
 
 
 # sesión
 def get_session() -> sesion.GetSessionUseCase:
-    return sesion.GetSessionUseCase()
+    return sesion.GetSessionUseCase(uow_factory)
 
 
 def get_sync_google_status() -> sesion.GetSyncGoogleStatusUseCase:
@@ -134,3 +144,103 @@ def change_activo_estado() -> activos.ChangeActivoEstadoUseCase:
 
 def list_movimientos() -> activos.ListMovimientosUseCase:
     return activos.ListMovimientosUseCase(uow_factory)
+
+
+# catálogos: tipos, marcas, modelos y características
+def update_tipo_equipo() -> catalogos.UpdateTipoEquipoUseCase:
+    return catalogos.UpdateTipoEquipoUseCase(uow_factory)
+
+
+def list_marcas() -> catalogos.ListMarcasUseCase:
+    return catalogos.ListMarcasUseCase(uow_factory)
+
+
+def create_marca() -> catalogos.CreateMarcaUseCase:
+    return catalogos.CreateMarcaUseCase(uow_factory)
+
+
+def update_marca() -> catalogos.UpdateMarcaUseCase:
+    return catalogos.UpdateMarcaUseCase(uow_factory)
+
+
+def list_modelos() -> catalogos.ListModelosUseCase:
+    return catalogos.ListModelosUseCase(uow_factory)
+
+
+def create_modelo() -> catalogos.CreateModeloUseCase:
+    return catalogos.CreateModeloUseCase(uow_factory)
+
+
+def update_modelo() -> catalogos.UpdateModeloUseCase:
+    return catalogos.UpdateModeloUseCase(uow_factory)
+
+
+def list_caracteristicas() -> catalogos.ListCaracteristicasUseCase:
+    return catalogos.ListCaracteristicasUseCase(uow_factory)
+
+
+def create_caracteristica() -> catalogos.CreateCaracteristicaUseCase:
+    return catalogos.CreateCaracteristicaUseCase(uow_factory)
+
+
+def update_caracteristica() -> catalogos.UpdateCaracteristicaUseCase:
+    return catalogos.UpdateCaracteristicaUseCase(uow_factory)
+
+
+# seguridad
+def list_permisos() -> seguridad.ListPermisosUseCase:
+    return seguridad.ListPermisosUseCase(uow_factory)
+
+
+def list_roles() -> seguridad.ListRolesUseCase:
+    return seguridad.ListRolesUseCase(uow_factory)
+
+
+def create_rol() -> seguridad.CreateRolUseCase:
+    return seguridad.CreateRolUseCase(uow_factory)
+
+
+def update_rol() -> seguridad.UpdateRolUseCase:
+    return seguridad.UpdateRolUseCase(uow_factory)
+
+
+def list_operadores() -> seguridad.ListOperadoresUseCase:
+    return seguridad.ListOperadoresUseCase(uow_factory)
+
+
+def invite_operador() -> seguridad.InviteOperadorUseCase:
+    return seguridad.InviteOperadorUseCase(uow_factory, CognitoDirectorio())
+
+
+def update_operador() -> seguridad.UpdateOperadorUseCase:
+    return seguridad.UpdateOperadorUseCase(uow_factory)
+
+
+# reasignaciones
+def list_reasignaciones() -> reasignaciones.ListReasignacionesUseCase:
+    return reasignaciones.ListReasignacionesUseCase(uow_factory)
+
+
+def request_reasignacion() -> reasignaciones.RequestReasignacionUseCase:
+    return reasignaciones.RequestReasignacionUseCase(uow_factory)
+
+
+def approve_reasignacion() -> reasignaciones.ApproveReasignacionUseCase:
+    return reasignaciones.ApproveReasignacionUseCase(uow_factory)
+
+
+def reject_reasignacion() -> reasignaciones.RejectReasignacionUseCase:
+    return reasignaciones.RejectReasignacionUseCase(uow_factory)
+
+
+def cancel_reasignacion() -> reasignaciones.CancelReasignacionUseCase:
+    return reasignaciones.CancelReasignacionUseCase(uow_factory)
+
+
+# importaciones
+def import_usuarios() -> importaciones.ImportUsuariosUseCase:
+    return importaciones.ImportUsuariosUseCase(uow_factory)
+
+
+def import_activos() -> importaciones.ImportActivosUseCase:
+    return importaciones.ImportActivosUseCase(uow_factory)

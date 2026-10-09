@@ -27,6 +27,11 @@ class EstadoActivo(StrEnum):
     def requiere_titular(self) -> bool:
         return self.es_tenencia or self is EstadoActivo.PENDIENTE_RECUPERACION
 
+    @property
+    def requiere_custodio(self) -> bool:
+        """Fuera de manos del titular: alguien con acceso a la aplicación responde por el equipo."""
+        return self in (EstadoActivo.DISPONIBLE, EstadoActivo.EN_RESGUARDO, EstadoActivo.EN_REPARACION)
+
 
 _CONSERVAR = object()
 
@@ -53,6 +58,7 @@ class Activo:
     usuario_id: int | None = None
     prestado_a: int | None = None
     fecha_asignacion: date | None = None
+    custodio_id: int | None = None
 
     def mover(
         self,
@@ -61,9 +67,15 @@ class Activo:
         titular: int | None | object = _CONSERVAR,
         prestado_a: int | None = None,
         fecha_asignacion: date | None | object = _CONSERVAR,
+        custodio_id: int | None = None,
     ) -> Activo:
         """Nuevo estado respetando las restricciones de la tabla: titular solo en estados que lo exigen,
-        ``prestado_a`` solo en préstamo y fecha de asignación solo con titular."""
+        ``prestado_a`` solo en préstamo, fecha de asignación solo con titular y custodio siempre que el
+        equipo no está en manos de su titular."""
+        if estado.requiere_custodio and custodio_id is None:
+            raise ValidationError(
+                "Indique quién queda a cargo del resguardo del equipo.", details={"field": "custodioId"}
+            )
         nuevo_titular = self.usuario_id if titular is _CONSERVAR else titular
         if not estado.requiere_titular:
             nuevo_titular = None
@@ -74,6 +86,7 @@ class Activo:
             usuario_id=nuevo_titular,
             prestado_a=prestado_a if estado is EstadoActivo.PRESTAMO else None,
             fecha_asignacion=fecha if nuevo_titular is not None else None,
+            custodio_id=custodio_id if estado.requiere_custodio else None,
         )
 
     def to_dict(self) -> dict:
@@ -85,6 +98,7 @@ class Activo:
             "usuarioId": self.usuario_id,
             "prestadoA": self.prestado_a,
             "fechaAsignacion": self.fecha_asignacion,
+            "custodioId": self.custodio_id,
         }
 
 
@@ -101,6 +115,10 @@ class Movimiento:
     realizado_en: datetime
     usuario_anterior_nombre: str | None = None
     usuario_nuevo_nombre: str | None = None
+    custodio_anterior: int | None = None
+    custodio_nuevo: int | None = None
+    custodio_anterior_nombre: str | None = None
+    custodio_nuevo_nombre: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -112,7 +130,56 @@ class Movimiento:
             "usuarioNuevo": self.usuario_nuevo,
             "usuarioAnteriorNombre": self.usuario_anterior_nombre,
             "usuarioNuevoNombre": self.usuario_nuevo_nombre,
+            "custodioAnterior": self.custodio_anterior,
+            "custodioNuevo": self.custodio_nuevo,
+            "custodioAnteriorNombre": self.custodio_anterior_nombre,
+            "custodioNuevoNombre": self.custodio_nuevo_nombre,
             "motivo": self.motivo,
             "realizadoPor": self.realizado_por,
             "realizadoEn": self.realizado_en,
+        }
+
+
+class EstadoReasignacion(StrEnum):
+    PENDIENTE = "pendiente"
+    APROBADA = "aprobada"
+    RECHAZADA = "rechazada"
+    CANCELADA = "cancelada"
+
+
+#: Estados desde los que un equipo puede pasar de una persona a otra.
+ESTADOS_REASIGNABLES = (EstadoActivo.ASIGNADO, EstadoActivo.EN_RESGUARDO, EstadoActivo.PENDIENTE_RECUPERACION)
+
+
+@dataclass(frozen=True)
+class Reasignacion:
+    id: int
+    activo_id: int
+    usuario_origen: int
+    usuario_destino: int
+    motivo: str
+    estado: EstadoReasignacion
+    solicitado_por: int
+    solicitado_en: datetime
+    resuelto_por: int | None = None
+    resuelto_en: datetime | None = None
+    comentario: str | None = None
+    solicitado_por_nombre: str | None = None
+    resuelto_por_nombre: str | None = None
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "activoId": self.activo_id,
+            "usuarioOrigen": self.usuario_origen,
+            "usuarioDestino": self.usuario_destino,
+            "motivo": self.motivo,
+            "estado": self.estado.value,
+            "solicitadoPor": self.solicitado_por,
+            "solicitadoPorNombre": self.solicitado_por_nombre,
+            "solicitadoEn": self.solicitado_en,
+            "resueltoPor": self.resuelto_por,
+            "resueltoPorNombre": self.resuelto_por_nombre,
+            "resueltoEn": self.resuelto_en,
+            "comentario": self.comentario,
         }

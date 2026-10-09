@@ -21,7 +21,7 @@ ROUTES = {
     ("GET", "/activos"): lambda r: container.list_activos().execute(_p(r)),
     ("POST", "/activos"): lambda r: created(container.create_activo().execute(_p(r), r.json_body())),
     ("POST", f"{_ID}/asignar"): lambda r: container.assign_activo().execute(_p(r), _id(r), r.json_body()),
-    ("POST", f"{_ID}/liberar"): lambda r: container.release_activo().execute(_p(r), _id(r)),
+    ("POST", f"{_ID}/liberar"): lambda r: container.release_activo().execute(_p(r), _id(r), r.json()),
     ("POST", f"{_ID}/estado"): lambda r: container.change_activo_estado().execute(
         _p(r), _id(r), r.json_body()
     ),

@@ -21,12 +21,12 @@ ROUTES = {
     ("GET", "/usuarios"): lambda r: container.list_usuarios().execute(_p(r)),
     ("POST", "/usuarios"): lambda r: created(container.create_usuario().execute(_p(r), r.json_body())),
     ("PATCH", _ID): lambda r: container.update_usuario().execute(_p(r), _id(r), r.json_body()),
-    ("DELETE", _ID): lambda r: container.delete_usuario().execute(_p(r), _id(r)),
+    ("DELETE", _ID): lambda r: container.delete_usuario().execute(_p(r), _id(r), r.query_str("custodioId")),
     ("POST", f"{_ID}/vacaciones"): lambda r: container.register_vacaciones().execute(
         _p(r), _id(r), r.json_body()
     ),
     ("POST", f"{_ID}/vacaciones/finalizar"): lambda r: container.finish_vacaciones().execute(_p(r), _id(r)),
-    ("POST", f"{_ID}/desactivar"): lambda r: container.deactivate_usuario().execute(_p(r), _id(r)),
+    ("POST", f"{_ID}/desactivar"): lambda r: container.deactivate_usuario().execute(_p(r), _id(r), r.json()),
     ("POST", f"{_ID}/reactivar"): lambda r: container.reactivate_usuario().execute(_p(r), _id(r)),
 }
 

@@ -22,7 +22,13 @@ class ActivoRepository(ABC):
 
     @abstractmethod
     def create(
-        self, articulo_id: int, serial: str, estado: EstadoActivo, usuario_id: int | None, fecha: date | None
+        self,
+        articulo_id: int,
+        serial: str,
+        estado: EstadoActivo,
+        usuario_id: int | None,
+        fecha: date | None,
+        custodio_id: int | None,
     ) -> Activo: ...
 
     @abstractmethod
@@ -33,6 +39,11 @@ class ActivoRepository(ABC):
 
     @abstractmethod
     def prestados_a(self, usuario_id: int) -> list[Activo]: ...
+
+    @abstractmethod
+    def tenencia_por_tipo(self, usuario_id: int, tipo_id: int) -> int:
+        """Equipos del tipo que la persona tiene: como titular (asignado, resguardo, préstamo, pendiente)
+        más los que recibió en préstamo."""
 
     @abstractmethod
     def add_movimiento(

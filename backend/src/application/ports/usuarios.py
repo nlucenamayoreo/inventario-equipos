@@ -18,6 +18,10 @@ class UsuarioRepository(ABC):
         """Usuario no eliminado (bloqueado para actualizar), con su vacación abierta."""
 
     @abstractmethod
+    def por_codigo(self, codigo: str) -> Usuario | None:
+        """Usuario no eliminado con ese código, sin distinguir mayúsculas."""
+
+    @abstractmethod
     def estado_por_codigo(self, codigo: str, excluir_id: int | None = None) -> EstadoUsuario | None:
         """Estado del usuario con ese código (incluye eliminados), sin distinguir mayúsculas."""
 

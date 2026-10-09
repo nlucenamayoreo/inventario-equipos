@@ -9,36 +9,51 @@ import psycopg
 from application.ports.activos import ActivoRepository, SyncGoogleRepository
 from domain.entities.activos import Activo, EstadoActivo, Movimiento
 
-_COLS = "id, articulo_id, serial, estado::text AS estado, usuario_id, prestado_a, fecha_asignacion"
+_COLS = (
+    "id, articulo_id, serial, estado::text AS estado, usuario_id, prestado_a, fecha_asignacion, custodio_id"
+)
 
 _INSERT_SQL = f"""
-INSERT INTO tbl_activo (articulo_id, serial, estado, usuario_id, fecha_asignacion)
-VALUES (%s, %s, %s::estado_activo, %s, %s)
+INSERT INTO tbl_activo (articulo_id, serial, estado, usuario_id, fecha_asignacion, custodio_id)
+VALUES (%s, %s, %s::estado_activo, %s, %s, %s)
 RETURNING {_COLS}
 """
 
 _UPDATE_SQL = """
 UPDATE tbl_activo
-SET estado = %s::estado_activo, usuario_id = %s, prestado_a = %s, fecha_asignacion = %s,
+SET estado = %s::estado_activo, usuario_id = %s, prestado_a = %s, fecha_asignacion = %s, custodio_id = %s,
     actualizado_en = now()
 WHERE id = %s
 """
 
 _INSERT_MOVIMIENTO_SQL = """
 INSERT INTO tbl_activo_movimiento
-    (activo_id, estado_anterior, estado_nuevo, usuario_anterior, usuario_nuevo, motivo, realizado_por)
-VALUES (%s, %s::estado_activo, %s::estado_activo, %s, %s, %s, %s)
+    (activo_id, estado_anterior, estado_nuevo, usuario_anterior, usuario_nuevo, motivo, realizado_por,
+     custodio_anterior, custodio_nuevo)
+VALUES (%s, %s::estado_activo, %s::estado_activo, %s, %s, %s, %s, %s, %s)
 """
 
 _MOVIMIENTOS_SQL = """
 SELECT m.id, m.activo_id, m.estado_anterior::text AS estado_anterior, m.estado_nuevo::text AS estado_nuevo,
        m.usuario_anterior, m.usuario_nuevo, m.motivo, m.realizado_por, m.realizado_en,
-       ua.nombre AS usuario_anterior_nombre, un.nombre AS usuario_nuevo_nombre
+       ua.nombre AS usuario_anterior_nombre, un.nombre AS usuario_nuevo_nombre,
+       m.custodio_anterior, m.custodio_nuevo,
+       ca.nombre AS custodio_anterior_nombre, cn.nombre AS custodio_nuevo_nombre
 FROM tbl_activo_movimiento m
 LEFT JOIN tbl_usuario ua ON ua.id = m.usuario_anterior
 LEFT JOIN tbl_usuario un ON un.id = m.usuario_nuevo
+LEFT JOIN tbl_operador ca ON ca.id = m.custodio_anterior
+LEFT JOIN tbl_operador cn ON cn.id = m.custodio_nuevo
 WHERE m.activo_id = %s
 ORDER BY m.realizado_en DESC, m.id DESC
+"""
+
+_TENENCIA_SQL = """
+SELECT count(*)::int AS n
+FROM tbl_activo a JOIN tbl_articulo ar ON ar.id = a.articulo_id
+WHERE ((a.usuario_id = %s AND a.estado IN ('asignado', 'en_resguardo', 'prestamo', 'pendiente_recuperacion'))
+       OR (a.prestado_a = %s AND a.estado = 'prestamo'))
+  AND ar.tipo_id = %s
 """
 
 _SYNC_SQL = """
@@ -51,31 +66,17 @@ SELECT
 
 
 def _activo(row: dict) -> Activo:
-    return Activo(
-        row["id"],
-        row["articulo_id"],
-        row["serial"],
-        EstadoActivo(row["estado"]),
-        row["usuario_id"],
-        row["prestado_a"],
-        row["fecha_asignacion"],
-    )
+    return Activo(**{**row, "estado": EstadoActivo(row["estado"])})
 
 
 def _movimiento(row: dict) -> Movimiento:
     anterior = row["estado_anterior"]
     return Movimiento(
-        row["id"],
-        row["activo_id"],
-        EstadoActivo(anterior) if anterior else None,
-        EstadoActivo(row["estado_nuevo"]),
-        row["usuario_anterior"],
-        row["usuario_nuevo"],
-        row["motivo"],
-        row["realizado_por"],
-        row["realizado_en"],
-        row["usuario_anterior_nombre"],
-        row["usuario_nuevo_nombre"],
+        **{
+            **row,
+            "estado_anterior": EstadoActivo(anterior) if anterior else None,
+            "estado_nuevo": EstadoActivo(row["estado_nuevo"]),
+        }
     )
 
 
@@ -102,9 +103,19 @@ class PostgresActivoRepository(ActivoRepository):
         return rows[0]["hay"]
 
     def create(
-        self, articulo_id: int, serial: str, estado: EstadoActivo, usuario_id: int | None, fecha: date | None
+        self,
+        articulo_id: int,
+        serial: str,
+        estado: EstadoActivo,
+        usuario_id: int | None,
+        fecha: date | None,
+        custodio_id: int | None,
     ) -> Activo:
-        return _activo(self._rows(_INSERT_SQL, (articulo_id, serial, estado.value, usuario_id, fecha))[0])
+        params = (articulo_id, serial, estado.value, usuario_id, fecha, custodio_id)
+        return _activo(self._rows(_INSERT_SQL, params)[0])
+
+    def tenencia_por_tipo(self, usuario_id: int, tipo_id: int) -> int:
+        return self._rows(_TENENCIA_SQL, (usuario_id, usuario_id, tipo_id))[0]["n"]
 
     def save(self, activo: Activo) -> None:
         with self._connection.cursor() as cursor:
@@ -115,6 +126,7 @@ class PostgresActivoRepository(ActivoRepository):
                     activo.usuario_id,
                     activo.prestado_a,
                     activo.fecha_asignacion,
+                    activo.custodio_id,
                     activo.id,
                 ),
             )
@@ -142,6 +154,8 @@ class PostgresActivoRepository(ActivoRepository):
             despues.usuario_id,
             motivo,
             realizado_por,
+            antes.custodio_id if antes else None,
+            despues.custodio_id,
         )
         with self._connection.cursor() as cursor:
             cursor.execute(_INSERT_MOVIMIENTO_SQL, params)

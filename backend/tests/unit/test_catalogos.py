@@ -4,17 +4,22 @@ import pytest
 
 from application.use_cases.catalogos import (
     CreateArticuloUseCase,
+    CreateCaracteristicaUseCase,
     CreateCargoUseCase,
     CreateDepartamentoUseCase,
+    CreateMarcaUseCase,
+    CreateModeloUseCase,
     CreateSiloUseCase,
     CreateTipoEquipoUseCase,
     ListCargosUseCase,
     ListSilosUseCase,
     UpdateDotacionUseCase,
+    UpdateMarcaUseCase,
+    UpdateTipoEquipoUseCase,
 )
 from domain.entities.catalogos import NivelDotacion
 from domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
-from fakes.escenario import ADMIN, CONSULTA, escenario
+from fakes.escenario import ADMIN, ANALISTA, CONSULTA, escenario
 
 
 def test_consulta_lee_pero_no_modifica():
@@ -47,20 +52,58 @@ def test_cargo_nuevo_permitido_y_tipo_nuevo_no_permitido():
         CreateTipoEquipoUseCase(uow.factory).execute(ADMIN, {"nombre": "laptop"})
 
 
-def test_articulo_codigo_y_duplicado():
+def test_articulo_desde_modelo_con_caracteristicas():
     uow = escenario()
-    art = CreateArticuloUseCase(uow.factory).execute(
-        ADMIN, {"tipoId": 2, "marca": "Dell", "modelo": "U2424", "vidaUtilMeses": 60}
+    modelo = CreateModeloUseCase(uow.factory).execute(
+        ADMIN, {"marcaId": 1, "tipoId": 1, "nombre": "Latitude 7450"}
     )
-    assert art.codigo == "ART-004" and art.to_dict()["vidaUtilMeses"] == 60
+    art = CreateArticuloUseCase(uow.factory).execute(
+        ADMIN,
+        {
+            "modeloId": modelo.id,
+            "vidaUtilMeses": 60,
+            "caracteristicas": [{"caracteristicaId": 1, "valorId": 2}],
+        },
+    )
+    assert art.codigo == "ART-004" and (art.marca, art.modelo, art.tipo_id) == ("Dell", "Latitude 7450", 1)
+    assert art.to_dict()["caracteristicas"] == [{"caracteristicaId": 1, "valorId": 2}]
     with pytest.raises(ConflictError):
+        CreateArticuloUseCase(uow.factory).execute(ADMIN, {"modeloId": 1})
+    monitor = CreateModeloUseCase(uow.factory).execute(ADMIN, {"marcaId": 2, "tipoId": 2, "nombre": "E27"})
+    with pytest.raises(ValidationError):  # característica de laptop en un monitor
         CreateArticuloUseCase(uow.factory).execute(
-            ADMIN, {"tipoId": 1, "marca": "dell", "modelo": "LATITUDE 5440"}
+            ADMIN, {"modeloId": monitor.id, "caracteristicas": [{"caracteristicaId": 1, "valorId": 1}]}
         )
     with pytest.raises(ValidationError):
-        CreateArticuloUseCase(uow.factory).execute(
-            ADMIN, {"tipoId": 1, "marca": "X", "modelo": "Y", "vidaUtilMeses": -1}
+        CreateArticuloUseCase(uow.factory).execute(ADMIN, {"modeloId": modelo.id, "vidaUtilMeses": -1})
+    with pytest.raises(ValidationError):
+        CreateArticuloUseCase(uow.factory).execute(ADMIN, {"tipoId": 1, "marca": "X", "modelo": "Y"})
+
+
+def test_marcas_modelos_y_caracteristicas():
+    uow = escenario()
+    marca = CreateMarcaUseCase(uow.factory).execute(ADMIN, {"nombre": "Lenovo"})
+    with pytest.raises(ConflictError):
+        CreateMarcaUseCase(uow.factory).execute(ADMIN, {"nombre": "lenovo"})
+    assert UpdateMarcaUseCase(uow.factory).execute(ADMIN, str(marca.id), {"activo": False}).activo is False
+    with pytest.raises(ConflictError):
+        CreateModeloUseCase(uow.factory).execute(
+            ADMIN, {"marcaId": 1, "tipoId": 1, "nombre": "latitude 5440"}
         )
+    car = CreateCaracteristicaUseCase(uow.factory).execute(
+        ADMIN, {"tipoId": 1, "nombre": "Disco", "valores": ["512 GB", "1 TB", "512 gb"]}
+    )
+    assert [v.valor for v in car.valores] == ["512 GB", "1 TB"]
+    with pytest.raises(ForbiddenError):
+        CreateMarcaUseCase(uow.factory).execute(ANALISTA, {"nombre": "Asus"})
+
+
+def test_maximo_por_tipo_configurable():
+    uow = escenario()
+    tipo = UpdateTipoEquipoUseCase(uow.factory).execute(ADMIN, "2", {"maxPorUsuario": 3})
+    assert tipo.to_dict()["maxPorUsuario"] == 3
+    with pytest.raises(ValidationError):
+        UpdateTipoEquipoUseCase(uow.factory).execute(ADMIN, "2", {"maxPorUsuario": 0})
 
 
 def test_dotacion_valida_articulo_del_mismo_tipo():

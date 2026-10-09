@@ -47,9 +47,77 @@ class TipoEquipo:
     id: int
     nombre: str
     activo: bool = True
+    max_por_usuario: int | None = None
+
+    @property
+    def limite(self) -> int:
+        """Máximo de equipos de este tipo por persona. Sin configurar: 2 laptops (la propia y una de resguardo
+        o préstamo) y 1 de los demás tipos."""
+        if self.max_por_usuario:
+            return self.max_por_usuario
+        return 2 if self.nombre.strip().lower() == "laptop" else 1
+
+    def to_dict(self) -> dict:
+        return {"id": self.id, "nombre": self.nombre, "activo": self.activo, "maxPorUsuario": self.limite}
+
+
+@dataclass(frozen=True)
+class Marca:
+    id: int
+    nombre: str
+    activo: bool = True
 
     def to_dict(self) -> dict:
         return {"id": self.id, "nombre": self.nombre, "activo": self.activo}
+
+
+@dataclass(frozen=True)
+class Modelo:
+    id: int
+    marca_id: int
+    tipo_id: int
+    nombre: str
+    activo: bool = True
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "marcaId": self.marca_id,
+            "tipoId": self.tipo_id,
+            "nombre": self.nombre,
+            "activo": self.activo,
+        }
+
+
+@dataclass(frozen=True)
+class ValorCaracteristica:
+    id: int
+    valor: str
+    activo: bool = True
+
+    def to_dict(self) -> dict:
+        return {"id": self.id, "valor": self.valor, "activo": self.activo}
+
+
+@dataclass(frozen=True)
+class Caracteristica:
+    id: int
+    tipo_id: int
+    nombre: str
+    activo: bool = True
+    valores: tuple[ValorCaracteristica, ...] = field(default_factory=tuple)
+
+    def valor(self, valor_id: int) -> ValorCaracteristica | None:
+        return next((v for v in self.valores if v.id == valor_id), None)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "tipoId": self.tipo_id,
+            "nombre": self.nombre,
+            "activo": self.activo,
+            "valores": [v.to_dict() for v in self.valores],
+        }
 
 
 @dataclass(frozen=True)
@@ -62,6 +130,9 @@ class Articulo:
     especificaciones: str | None = None
     vida_util_meses: int | None = None
     activo: bool = True
+    modelo_id: int | None = None
+    #: (caracteristica_id, valor_id) seleccionados para este artículo
+    caracteristicas: tuple[tuple[int, int], ...] = ()
 
     def to_dict(self) -> dict:
         return {
@@ -70,9 +141,11 @@ class Articulo:
             "tipoId": self.tipo_id,
             "marca": self.marca,
             "modelo": self.modelo,
+            "modeloId": self.modelo_id,
             "especificaciones": self.especificaciones,
             "vidaUtilMeses": self.vida_util_meses,
             "activo": self.activo,
+            "caracteristicas": [{"caracteristicaId": c, "valorId": v} for c, v in self.caracteristicas],
         }
 
 
